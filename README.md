@@ -8,6 +8,12 @@ Testing
 
 * Compile [this neovim fork](https://github.com/jbyuki/neovim)
 
+* Put the following in `init.lua`:
+
+```lua
+require"ntangle-inc".start()
+```
+
 Notice
 ------
 
