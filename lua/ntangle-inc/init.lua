@@ -1519,11 +1519,12 @@ function M.start()
 			vim.api.nvim_set_option_value("undolevels", -1, { buf = buf })
 			-- vim.api.nvim_buf_set_name(buf, root_section.name)
 
-			local lang = vim.filetype.match({filename = root_section.name})
-			if lang then
-				buf_filetype[buf] = lang
+			local ft = vim.filetype.match({filename = root_section.name})
+			local lang
+			if ft then
+				buf_filetype[buf] = ft
+				lang = vim.treesitter.language.get_lang(ft)
 			end
-
 
 
 			mirror_buf_to_root[buf] = root_section
@@ -1593,9 +1594,9 @@ function M.start()
 			end
 
 
-			if lang then
+			if ft then
 				vim.o.eventignore = "all"
-				vim.bo[buf].ft = lang
+				vim.bo[buf].ft = ft
 				vim.o.eventignore = ""
 			end
 

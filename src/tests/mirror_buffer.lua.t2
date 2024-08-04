@@ -139,9 +139,12 @@ M.buf_filetype = {}
 local buf_filetype  = M.buf_filetype
 
 ;; detect filetype from filename
-local lang = vim.filetype.match({filename = root_section.name})
-if lang then
-	buf_filetype[buf] = lang
+local ft = vim.filetype.match({filename = root_section.name})
+local lang
+if ft then
+	buf_filetype[buf] = ft
+	; convert filetype to lang
 end
 
-
+;; convert filetype to lang
+lang = vim.treesitter.language.get_lang(ft)

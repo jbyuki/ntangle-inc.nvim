@@ -45,9 +45,9 @@ if found then
 end
 
 ;; silently set filetype for buffer
-if lang then
+if ft then
 	vim.o.eventignore = "all"
-	vim.bo[buf].ft = lang
+	vim.bo[buf].ft = ft
 	vim.o.eventignore = ""
 end
 
