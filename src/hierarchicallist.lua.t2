@@ -1,0 +1,857 @@
+;;; ntangle-inc
+;; variables
+local HL = {}
+
+;; implement
+function HL:new()
+	local hl = {}
+	; init hierarchical list
+	; set sections to weak table
+	return setmetatable(hl, { __index = self })
+end
+
+;; variables
+local LINE_TYPE = {
+	; line types
+}
+
+;; line types
+ROOT_SECTION = 1,
+SECTION = 2,
+REFERENCE = 3,
+META_SECTION = 5,
+TEXT = 4,
+
+;; implement
+function M.insert_hl(source, ll, ll_elem)
+	; parse ll elem data type
+	; if insert first line
+	; otherwise get assocated hierarchical list
+	if line_type == LINE_TYPE.TEXT then
+		return hl:insert_text(ll, ll_elem)
+	elseif line_type == LINE_TYPE.REFERENCE then
+		return hl:insert_reference(ll, ll_elem)
+	elseif line_type == LINE_TYPE.SECTION then
+		return hl:insert_section(ll_elem)
+	elseif line_type == LINE_TYPE.ROOT_SECTION then
+		return hl:insert_root_section(ll_elem)
+	elseif line_type == LINE_TYPE.META_SECTION then
+		return hl:insert_meta_section(ll, ll_elem)
+	; insert filler line type
+	else
+		assert(false, "Invalid line type")
+	end
+end
+
+;; implement
+function M.parse_line(line)
+	; if line is nil then filler line
+	local _, _, prefix = line:find("^%s*([:;]*)")
+	local line_type = nil
+	if prefix == "" then
+		line_type = LINE_TYPE.TEXT
+	elseif prefix == ";" then
+		line_type = LINE_TYPE.REFERENCE
+	elseif prefix == ";;" then
+		line_type = LINE_TYPE.SECTION
+	elseif prefix == "::" then
+		line_type = LINE_TYPE.ROOT_SECTION
+	elseif prefix == ";;;" then
+		line_type = LINE_TYPE.META_SECTION
+	else
+		line_type = LINE_TYPE.TEXT
+	end
+	return line_type
+end
+
+;; parse ll elem data type
+local line = ll_elem.str
+local line_type = M.parse_line(line)
+
+;; implement
+function HL:insert_root_section(ll_elem)
+	; get root section name
+	; create section hl elem
+	; link hl elem to ll elem
+	; create section if not existent
+	; set section to root
+	; invoke new root callback
+	; link section part to section
+	; update section part elems
+	return hl_elem
+end
+
+;; declare
+local trim1
+
+;; implement
+function trim1(s)
+   return s:gsub("^%s*(.-)%s*$", "%1")
+end
+
+;; get root section name
+local line = ll_elem.str
+local name = trim1(line:sub(3))
+
+;; variables
+local HL_ELEM_TYPE = {
+	; hl elem type
+}
+
+; export hl elem type
+
+;; hl elem type
+SECTION_PART = 1,
+
+;; create section hl elem
+local hl_elem = {
+	type = HL_ELEM_TYPE.SECTION_PART,
+	name = name,
+	lines = LL:new(),
+	; init section part
+}
+
+;; link hl elem to ll elem
+hl_elem.ll_elem = ll_elem
+ll_elem.hl_elem = hl_elem
+
+;; init hierarchical list
+hl.sections = {}
+
+;; create section if not existent
+local section = self.sections[name]
+if not section then
+	 section = {
+		name = name,
+		parts = LL:new(),
+		; init section
+	}
+	self.sections[name] = section
+end
+
+;; set section to root
+section.root = true
+
+;; link section part to section
+section.parts:push_back(hl_elem)
+hl_elem.section = section
+
+;; update section part elems
+local toremove = {}
+
+local elem = ll_elem.next
+while elem do
+	if elem.hl_elem then
+		if elem.hl_elem.type == HL_ELEM_TYPE.SECTION_PART then
+			break
+		else
+			table.insert(toremove, elem.hl_elem)
+		end
+	end
+	elem = elem.next
+end
+
+; update size old section part
+; remove subsequent hl elem from old section part
+; add subsequent hl elem to new section part
+; update size new section part
+
+;; update size old section part
+local elem_sizes = {}
+local remove_total = 0
+for _, elem in ipairs(toremove) do
+	local elem_size = self:get_size(elem)
+	table.insert(elem_sizes, elem_size)
+	remove_total = remove_total + elem_size
+end
+
+; remove elem insert section callback
+
+for i, elem_size in ipairs(elem_sizes) do
+	self:update_size_rec(toremove[i].part, -elem_size)
+end
+
+;; implement
+function HL:get_size(hl_elem)
+	if hl_elem.type == HL_ELEM_TYPE.TEXT then
+		return 1
+	elseif hl_elem.type == HL_ELEM_TYPE.REFERENCE then
+		; get reference size
+	; filler line size
+	else
+		assert(false, "hl_elem should not be anything except text and reference")
+	end
+end
+
+;; get reference size
+if self:is_recursive(hl_elem) then
+	return 0
+else
+	local section = self.sections[hl_elem.name]
+	if section then
+		return section.size
+	else
+		return 0
+	end
+end
+
+;; init section
+size = 0,
+
+;; implement
+function HL:is_recursive(hl_elem)
+	; cache is recursive for reference
+	local name = hl_elem.name
+	; get all parents
+	return false
+end
+
+;; init section
+refs = {},
+
+;; get all parents
+local open = {}
+local close = {}
+
+local hl_elem_section = hl_elem.part.section
+table.insert(open, hl_elem_section)
+
+while #open > 0 do
+	local section = open[#open]
+	table.remove(open)
+
+	for _, ref in ipairs(section.refs) do
+		local ref_section = ref.part.section
+		if ref_section == hl_elem_section then
+			return true
+		end
+
+		if not close[ref_section] then
+			table.insert(open, ref_section)
+			close[ref_section] = true
+		end
+	end
+end
+
+;; init section part
+size = 0,
+
+;; implement
+function HL:update_size_rec(section_part, delta_size, blacklisted)
+	local section = section_part.section
+	blacklisted = blacklisted or {} 
+	if blacklisted[section] then
+		return
+	end
+
+	section_part.size = section_part.size + delta_size
+	section.size = section.size + delta_size
+
+	blacklisted[section] = true
+
+	for _, ref in ipairs(section.refs) do
+		HL:update_size_rec(ref.part, delta_size, blacklisted)
+	end
+end
+
+;; remove subsequent hl elem from old section part
+for _, elem in ipairs(toremove) do
+	elem.part.lines:remove(elem)
+	elem.part = nil
+end
+
+;; add subsequent hl elem to new section part
+for _, elem in ipairs(toremove) do
+	elem.part = hl_elem
+	elem.part.lines:push_back(elem)
+end
+
+;; update size new section part
+for i, elem_size in ipairs(elem_sizes) do
+	self:update_size_rec(toremove[i].part, elem_size)
+	; insert elem insert section callback
+end
+
+;; implement
+function HL:insert_section(ll_elem)
+	; get section name
+	; create section hl elem
+	; link hl elem to ll elem
+	; create section if not existent
+
+	; link section part to section
+	; update section part elems
+	return hl_elem
+end
+
+;; get section name
+local line = ll_elem.str
+local name = trim1(line:sub(3))
+
+;; implement
+function HL:insert_reference(ll, ll_elem)
+	; get reference name
+	; create hl elem for reference
+	; link hl elem to ll elem
+	; link hl elem in section part
+	; update refs
+	; update size current section part reference
+	; insert reference callback
+	return hl_elem
+end
+
+;; get reference name
+local line = ll_elem.str
+local _, _, prefix, name = line:find("^(%s*);%s*(.-)%s*$")
+
+;; hl elem type
+REFERENCE = 2,
+
+;; create hl elem for reference
+local hl_elem = {
+	type = HL_ELEM_TYPE.REFERENCE,
+	name = name,
+	prefix = prefix,
+}
+
+;; link hl elem in section part
+if not ll_elem.prev then
+	; create fallback section if none
+	hl_elem.part = fallback_section.parts.head
+	hl_elem.part.lines:push_front(hl_elem)
+elseif ll_elem.prev.hl_elem.type == HL_ELEM_TYPE.SECTION_PART then
+	hl_elem.part = ll_elem.prev.hl_elem
+	hl_elem.part.lines:push_front(hl_elem)
+elseif ll_elem.prev.hl_elem.type == HL_ELEM_TYPE.META_SECTION then
+	; create fallback section if none
+	hl_elem.part = fallback_section.parts.head
+	hl_elem.part.lines:push_front(hl_elem)
+else
+	hl_elem.part = ll_elem.prev.hl_elem.part
+	hl_elem.part.lines:insert(hl_elem, ll_elem.prev.hl_elem)
+end
+
+;; create fallback section if none
+local fallback_section = self.sections[ll]
+if not fallback_section then
+	fallback_section = {
+		name = ll,
+		parts = LL:new(),
+		; init section
+	}
+
+	local fallback_section_part = {
+		name = ll,
+		lines = LL:new(),
+		; init section part
+	}
+
+	fallback_section.parts:push_back(fallback_section_part)
+	fallback_section_part.section = fallback_section
+	self.sections[ll] = fallback_section
+end
+
+;; update refs
+local ref_section = self.sections[name]
+if not ref_section then
+	; create new section and add ref
+end
+; add ref to section
+
+;; create new section and add ref
+ref_section = {
+	name = name,
+	parts = LL:new(),
+	; init section
+}
+
+self.sections[name] = ref_section
+
+;; add ref to section
+table.insert(ref_section.refs, hl_elem)
+
+;; update size current section part reference
+local blacklisted = {}
+local section = self.sections[name]
+blacklisted[section] = true
+self:update_size_rec(hl_elem.part, section.size, blacklisted)
+
+;; implement
+function HL:insert_text(ll, ll_elem)
+	; create hl elem for text
+	; link hl elem to ll elem
+	; link hl elem in section part
+	; update size current section part text
+	; insert text callback
+	return hl_elem
+end
+
+;; hl elem type
+TEXT = 3,
+
+;; create hl elem for text
+local hl_elem = {
+	type = HL_ELEM_TYPE.TEXT,
+}
+
+;; update size current section part text
+self:update_size_rec(hl_elem.part, 1)
+
+;; implement
+function M.remove_hl(source, ll, ll_elem)
+	; if remove first line
+	local hl_elem = ll_elem.hl_elem
+	local hl = ll_to_hl[ll]
+	if hl_elem then
+		if hl_elem.type == HL_ELEM_TYPE.TEXT then
+			hl:remove_text(ll_elem)
+		elseif hl_elem.type == HL_ELEM_TYPE.SECTION_PART then
+			hl:remove_section(ll, ll_elem)
+		elseif hl_elem.type == HL_ELEM_TYPE.REFERENCE then
+			hl:remove_reference(ll_elem)
+		elseif hl_elem.type == HL_ELEM_TYPE.META_SECTION then
+			hl:remove_meta_section(ll_elem)
+		; remove filler hl_elem
+		end
+	end
+end
+
+function HL:remove_section(ll, ll_elem)
+	local hl_elem = ll_elem.hl_elem
+	; get elems in section part
+	; remove section part callback removed
+	; update size section part remove
+	; update section part remove
+	; remove section part callback added
+	; remove section part
+	; if root callback remove root
+	; unlink hl elem
+	-- ; remove section if not more parts
+end
+
+;; get elems in section part
+local hl_elem_line = hl_elem.lines.head
+local hl_elem_lines = {}
+while hl_elem_line do
+	table.insert(hl_elem_lines, hl_elem_line)
+	hl_elem_line = hl_elem_line.next
+end
+
+local size_total = self:get_size_list(hl_elem_lines)
+
+;; implement
+function HL:get_size_list(hl_elems)
+	local size_total = 0
+	for _, hl_elem in ipairs(hl_elems) do
+		size_total = size_total + self:get_size(hl_elem)
+	end
+	return size_total
+end
+
+;; update size section part remove
+self:update_size_rec(hl_elem, -size_total)
+
+;; update section part remove
+local it = ll_elem.prev
+local prev_part = nil
+while it do
+	if it.hl_elem and it.hl_elem.type == HL_ELEM_TYPE.SECTION_PART then
+		prev_part = it.hl_elem
+		break
+	end
+	it = it.prev
+end
+
+if not prev_part then
+	; create fallback section if none
+	prev_part = fallback_section.parts.head
+end
+
+; remove elems from old parent
+; get hook elem from prev part
+; update parent of elems
+; add elems to next parent
+; update count next parent
+
+;; update parent of elems
+for _, hl_elem_line in ipairs(hl_elem_lines) do
+	hl_elem_line.part = prev_part
+end
+
+;; remove elems from old parent
+local removed = {}
+local elem = hl_elem.lines.head
+while elem do
+	local toremove = elem
+	elem = elem.next
+	table.insert(removed, toremove)
+	hl_elem.lines:remove(toremove)
+end
+
+;; add elems to next parent
+for _, elem in ipairs(removed) do
+	prev_part.lines:push_back(elem)
+end
+
+;; remove section part
+hl_elem.section.parts:remove(hl_elem)
+
+-- ;; remove section if not more parts
+-- if hl_elem.section.parts:is_empty() then
+	-- self.sections[hl_elem.section.name] = nil
+-- end
+
+;; update count next parent
+size_total = self:get_size_list(hl_elem_lines)
+self:update_size_rec(prev_part, size_total)
+
+;; set sections to weak table
+-- set weak keys when indexing with table for fallback sections
+setmetatable(hl.sections, { __mode = "k" })
+
+;; implement
+function HL:remove_reference(ll_elem)
+	local name = ll_elem.hl_elem.name
+	; update size reference remove
+	; remove reference callback
+	; remove reference from reference lists
+	; remove elem from part
+	; unlink hl elem
+	; remove section if no more ref
+end
+
+;; update size reference remove
+local hl_elem = ll_elem.hl_elem
+local blacklist = {}
+local section = self.sections[name]
+blacklist[section] = true
+self:update_size_rec(hl_elem.part, -section.size, blacklist)
+
+;; remove reference from reference lists
+for i, ref in ipairs(section.refs) do
+	if ref == hl_elem then
+		table.remove(section.refs, i)
+		break
+	end
+end
+
+;; remove section if no more ref
+if #section.refs == 0 then
+	self.sections[name] = nil
+end
+
+;; remove elem from part
+hl_elem.part.lines:remove(hl_elem)
+
+;; implement
+function HL:remove_text(ll_elem)
+	local hl_elem = ll_elem.hl_elem
+	; remove text callback
+	; update size text remove
+	; remove elem from part
+	; unlink hl elem
+end
+
+;; update size text remove
+self:update_size_rec(hl_elem.part, -1)
+
+;; if insert first line
+local hl
+if ll_elem == ll.head then
+	; get old meta section if any
+	if line_type == LINE_TYPE.META_SECTION then
+		; get meta section name
+		; remove from old meta section if any
+		; get meta section if any
+		; create temporary hl_elem for meta section
+		; add to new meta section
+	elseif ll.head.next and ll.head.next.hl_elem.type == HL_ELEM_TYPE.META_SECTION then
+		; remove from old meta section if any
+		; create empty meta section
+		; add to new meta section
+	elseif not hl then
+		; create empty meta section
+		; set path for hl
+		; add to new meta section
+	end
+
+;; variables
+M.ll_to_hl = {}
+local ll_to_hl = M.ll_to_hl
+setmetatable(ll_to_hl, {__mode = "k"})
+
+;; get old meta section if any
+hl = ll_to_hl[ll]
+
+;; remove from old meta section if any
+if hl then
+	local it = ll.head.next
+	while it do
+		M.remove_hl(source, ll, it)
+		it = it.next
+	end
+end
+
+;; get meta section name
+local name = trim1(line:sub(4))
+
+;; implement
+function M.get_hl_path(source, name)
+	; if source is buffer get path
+	; join and normalize path and name
+end
+
+;; if source is buffer get path
+if type(source) == "number" then
+	source = vim.api.nvim_buf_get_name(source)
+end
+
+;; join and normalize path and name
+local parentdir = vim.fs.dirname(source)
+local joined = vim.fs.joinpath(parentdir, name)
+return joined
+
+;; implement
+function M.get_hl(hl_path)
+	; if no hl create hl 
+	; otherwise return hl
+end
+
+;; variables
+local hl_path_to_hl = {}
+local hl_to_hl_path = {}
+setmetatable(hl_path_to_hl, { __mode = "v" })
+setmetatable(hl_to_hl_path, { __mode = "k" })
+M.hl_to_hl_path = hl_to_hl_path
+
+;; if no hl create hl 
+local hl = hl_path_to_hl[hl_path]
+if not hl then
+	; create new hl
+	; gather linked files if any
+	; append linked files to hl if not loaded
+	return hl
+end
+
+;; create new hl
+hl = HL:new()
+hl_path_to_hl[hl_path] = hl
+hl_to_hl_path[hl] = hl_path
+
+
+;; gather linked files if any
+local parent_path = vim.fs.dirname(hl_path)
+local dir = vim.fs.joinpath(parent_path, M.ntangle_folder)
+local info = vim.uv.fs_statfs(dir)
+local linked = {}
+if info then
+	for name, filetype in vim.fs.dir(dir) do
+		if filetype == "file" and vim.fn.fnamemodify(name, ":e") == "t2" then
+			local fullpath = vim.fs.joinpath(dir, name)
+			local f = io.open(fullpath)
+			if f then
+				local content = f:read("*a")
+				local path = vim.uv.fs_realpath(content)
+				if path then
+					table.insert(linked, path)
+					f:close()
+				end
+			end
+		end
+	end
+end
+
+;; append linked files to hl if not loaded
+local loaded = {}
+for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+	local path = vim.api.nvim_buf_get_name(buf)
+	if path then
+		path = vim.uv.fs_realpath(path)
+		if path then
+			loaded[path] = buf
+		end
+	end
+end
+
+for _, path in ipairs(linked) do
+	local loaded_buf = loaded[path]
+	if not loaded_buf then
+		if not lls[path] then
+			; read linked file
+			if #lines > 0 then
+				; create ll linked file
+				; append all to hl
+			end
+		end
+	elseif not lls[loaded_buf] then
+		M.add_tmonitor(loaded_buf)
+	end
+end
+
+;; read linked file
+local f = io.open(path)
+local lines = {}
+if f then
+	for line in f:lines() do
+		table.insert(lines, line)
+	end
+	f:close()
+end
+
+;; create ll linked file
+local ll = LL:new()
+lls[path] = ll
+
+;; append all to hl
+for _, line in ipairs(lines) do
+	local ll_elem = { str = line }
+	ll:push_back(ll_elem)
+	M.insert_hl(path, ll, ll_elem)
+end
+
+;; otherwise return hl
+return  hl
+
+;; get meta section if any
+local hl_path = M.get_hl_path(source, name)
+hl = M.get_hl(hl_path)
+
+;; create temporary hl_elem for meta section
+local hl_elem = {
+	type = HL_ELEM_TYPE.META_SECTION,
+	name = name
+}
+
+if not ll_elem.hl_elem then
+	; link hl elem to ll elem
+end
+
+;; add to new meta section
+local it = ll.head.next
+ll_to_hl[ll] = hl
+while it do
+	M.insert_hl(source, ll, it)
+	it = it.next
+end
+
+;; create empty meta section
+hl = HL:new()
+
+;; otherwise get assocated hierarchical list
+else
+	hl = ll_to_hl[ll]
+end
+
+;; if remove first line
+local hl
+if ll_elem == ll.head then
+	; get old meta section if any
+	if ll_elem.hl_elem and ll_elem.hl_elem.type == HL_ELEM_TYPE.META_SECTION then
+		local line = ll_elem.str
+		; remove from old meta section if any
+
+		if ll_elem.next and ll_elem.next.hl_elem and ll_elem.next.hl_elem.type == HL_ELEM_TYPE.META_SECTION then
+			line = ll_elem.next.str
+			; get meta section name
+
+			; get meta section if any
+			; add to new meta section skip first two
+		else
+			; create empty meta section
+			; add to new meta section
+		end
+	elseif ll_elem.next and ll_elem.next.hl_elem and  ll_elem.next.hl_elem.type == HL_ELEM_TYPE.META_SECTION then
+		; remove from old meta section if any
+		local line = ll_elem.next.str
+
+		; get meta section name
+		; get meta section if any
+		; add to new meta section skip first two
+	end
+end
+
+;; add to new meta section skip first two
+local it = ll.head.next.next
+ll_to_hl[ll] = hl
+while it do
+	M.insert_hl(source, ll, it)
+	it = it.next
+end
+
+;; implement
+function HL:insert_meta_section(ll, ll_elem)
+	local line = ll_elem.str
+	; get meta section name
+	; create hl elem for meta section
+	; link hl elem to ll elem
+	; link hl elem in section part
+end
+
+;; hl elem type
+META_SECTION = 4,
+
+;; create hl elem for meta section
+local hl_elem = {
+	type = HL_ELEM_TYPE.META_SECTION,
+	name = name
+}
+
+;; implement
+function HL:remove_meta_section(ll_elem)
+	local hl_elem = ll_elem.hl_elem
+	; remove elem from part
+	; unlink hl elem
+end
+
+;; unlink hl elem
+ll_elem.hl_elem = nil
+
+;; implement
+function HL:insert_filler(ll, ll_elem)
+	; create filler hl_elem
+	; link hl elem to ll elem
+	; link hl elem in section part
+end
+
+;; line types
+FILLER = 6,
+
+;; create filler ll_elem
+local ll_elem = { str = nil }
+ll:push_back(ll_elem)
+local line_type = LINE_TYPE.FILLER
+
+;; hl elem type
+FILLER = 5,
+
+;; create filler hl_elem
+local hl_elem = {
+	type = HL_ELEM_TYPE.FILLER,
+}
+
+;; filler line size
+elseif hl_elem.type == HL_ELEM_TYPE.FILLER then
+	return 0
+
+;; remove filler hl_elem
+elseif hl_elem.type == HL_ELEM_TYPE.FILLER then
+	hl:remove_filler(ll_elem)
+
+;; implement
+function HL:remove_filler(ll_elem)
+	local hl_elem = ll_elem.hl_elem
+	; remove elem from part
+	; unlink hl elem
+end
+
+;; if line is nil then filler line
+if not line then
+	return LINE_TYPE.FILLER
+end
+
+;; insert filler line type
+elseif line_type == LINE_TYPE.FILLER then
+	return hl:insert_filler(ll, ll_elem)
+
+;; set path for hl
+M.hl_to_hl_path[hl] = M.get_hl_path(source, ".")

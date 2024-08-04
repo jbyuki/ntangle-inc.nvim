@@ -1,0 +1,101 @@
+;;; ntangle-inc
+;; variables
+local root_callbacks = {}
+
+;; implement
+function M.on_root(cb)
+	table.insert(root_callbacks, cb)
+end
+
+;; invoke new root callback
+for _, cb in ipairs(root_callbacks) do
+	cb(self, section, true)
+end
+
+;; if root callback remove root
+for _, cb in ipairs(root_callbacks) do
+	cb(self, hl_elem.section, false)
+end
+
+;; variables
+local change_callbacks = {}
+
+;; implement
+function M.on_change(cb)
+	table.insert(change_callbacks, cb)
+end
+
+;; insert text callback
+local nt_infos = self:get_nt_from_hl_elem(hl_elem)
+for _, cb in ipairs(change_callbacks) do
+	cb(nt_infos, 1, 0, hl_elem)
+end
+
+;; insert reference callback
+if section.size > 0 then
+	local nt_infos = self:get_nt_from_hl_elem(hl_elem)
+	for _, cb in ipairs(change_callbacks) do
+		cb(nt_infos, section.size, 0, hl_elem)
+	end
+end
+
+;; remove text callback
+local nt_infos = self:get_nt_from_hl_elem(hl_elem)
+for _, cb in ipairs(change_callbacks) do
+	cb(nt_infos, 0, 1, hl_elem)
+end
+
+;; remove reference callback
+if section.size > 0 then
+	local nt_infos = self:get_nt_from_hl_elem(hl_elem)
+	for _, cb in ipairs(change_callbacks) do
+		cb(nt_infos, 0, section.size, hl_elem)
+	end
+end
+
+;; update text callback
+local hl = ll_to_hl[ll]
+if hl then
+	local nt_infos = hl:get_nt_from_hl_elem(hl_elem)
+	for _, cb in ipairs(change_callbacks) do
+		cb(nt_infos, 1, 1, hl_elem)
+	end
+end
+
+;; insert elem insert section callback
+if elem_size > 0 then
+	local nt_infos = self:get_nt_from_hl_elem(toremove[i]) 
+	for _, cb in ipairs(change_callbacks) do
+		cb(nt_infos, elem_size, 0, toremove[i])
+	end
+end
+
+;; remove elem insert section callback
+if remove_total > 0 then
+	local nt_infos = self:get_nt_from_hl_elem(toremove[1]) 
+
+	for _, cb in ipairs(change_callbacks) do
+		cb(nt_infos, 0, remove_total, toremove[1])
+	end
+end
+
+;; remove section part callback removed
+if size_total > 0 then
+	local nt_infos = self:get_nt_from_hl_elem(hl_elem) 
+
+	for _, cb in ipairs(change_callbacks) do
+		cb(nt_infos, 0, size_total, hl_elem)
+	end
+end
+
+;; get hook elem from prev part
+local hook_elem = removed[1]
+
+;; remove section part callback added
+if size_total > 0 then
+	local nt_infos = self:get_nt_from_hl_elem(hook_elem) 
+	for _, cb in ipairs(change_callbacks) do
+		cb(nt_infos, size_total, 0, hook_elem)
+	end
+end
+

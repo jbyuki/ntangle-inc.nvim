@@ -1,0 +1,60 @@
+;;; ../ntangle-inc
+;; implement
+function M.run_index_test(trials)
+	; get current buffer
+	; get number of lines in buffer
+
+	; run index test variables
+	trials = trials or 100
+	for i=1,trials do
+		; pick random line number
+		; test double indexing
+	end
+
+	local result = {}
+	; return index test results
+	return result
+end
+
+;; get current buffer
+local buf = vim.api.nvim_get_current_buf()
+
+;; get number of lines in buffer
+local count = vim.api.nvim_buf_line_count(buf)
+
+;; pick random line number
+local lnum = math.random(0,count-1)
+
+;; run index test variables
+local success = 0
+local total = 0
+
+;; test double indexing
+local nt_info = M.TtoNT(buf, lnum)
+if nt_info and #nt_info > 0 then
+	local hl, section, off, _ = unpack(nt_info[1])
+	local t_info = M.NTtoT(hl, section, off)
+	if t_info then
+		local _, ret_lnum = unpack(t_info)
+		if ret_lnum == lnum then
+			success = success + 1
+		else
+			total = total + 1
+			; save failure cases
+		end
+	else
+		total = total + 1
+		; save failure cases
+	end
+end
+
+;; run index test variables
+local failures = {}
+
+;; save failure cases
+table.insert(failures, lnum)
+
+;; return index test results
+result.total = total
+result.success = success
+result.failures = failures

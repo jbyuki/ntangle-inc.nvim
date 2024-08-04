@@ -1,0 +1,229 @@
+;;; ntangle-inc
+;; implement
+function M.TtoNT(buf, lnum)
+	; check cache if lnum is close for t to nt
+	; otherwise lookup t to nt
+	return {}
+end
+
+function M.NTtoT(hl, root_section, lnum)
+	; check cache if lnum is close for nt to t
+	; otherwise lookup nt to t
+end
+
+;; otherwise lookup t to nt
+local ll = lls[buf]
+if ll then
+	local ll_elem = ll.head
+	for i=1,lnum do
+		if not ll_elem then
+			return {}
+		end
+		ll_elem = ll_elem.next
+	end
+
+	; lookup nt for ll elem
+	; return found nt offsets
+end
+
+;; implement
+function HL:get_nt_from_hl_elem(hl_elem)
+	local open = { { hl_elem, 0, "" } }
+	local close = { }
+
+	; skip fetch offset if filler
+
+	while #open > 0 do
+		; get last cursor from open
+		; compute offset to section part
+		; compute offset to section
+		if section then
+			; if section part is root add to close 
+			; otherwise add refs to open
+		end
+	end
+	return close
+end
+
+;; lookup nt for ll elem
+if not ll_elem then
+	return {}
+end
+
+local hl_elem = ll_elem.hl_elem
+
+if not hl_elem or hl_elem.type ~= HL_ELEM_TYPE.TEXT then
+	return {}
+end
+
+local hl = ll_to_hl[ll]
+if not hl then
+	return {}
+end
+
+local close = hl:get_nt_from_hl_elem(hl_elem)
+
+;; get last cursor from open
+local hl_elem, off, prefix = unpack(open[#open])
+table.remove(open)
+
+; get section part for hl_elem
+
+;; compute offset to section part
+if hl_elem ~= part then
+	hl_elem = hl_elem.prev
+
+	while hl_elem do
+		; break if reached meta section
+		off = off + self:get_size(hl_elem)
+		hl_elem = hl_elem.prev
+	end
+end
+
+;; break if reached meta section
+if hl_elem.type == HL_ELEM_TYPE.META_SECTION then
+	break
+end
+
+;; get section part for hl_elem
+local part
+if hl_elem.type == HL_ELEM_TYPE.SECTION_PART then
+	part = hl_elem
+else
+	part = hl_elem.part
+end
+
+;; compute offset to section
+local section = part.section
+part = part.prev
+while part do
+	off = off + part.size
+	part = part.prev
+end
+
+;; if section part is root add to close 
+if section.root then
+	table.insert(close, {self, section, off, prefix })
+
+;; otherwise add refs to open
+else
+	for _, ref in ipairs(section.refs) do
+		if not self:is_recursive(ref) then
+			table.insert(open, {ref, off, ref.prefix .. prefix })
+		end
+	end
+end
+
+;; return found nt offsets
+return close
+
+;; implement
+function HL:get_hl_elem_at(section, lnum, prefix)
+	if not section then
+		return nil
+	end
+
+	local part = section.parts.head
+	local off = 0
+	prefix = prefix or ""
+
+	local hl_elem
+
+	while part do
+		if lnum < off + part.size then
+			; get hl_elem at offset in part
+			break
+		end
+		off = off + part.size
+		part = part.next
+	end
+	return hl_elem, prefix
+end
+
+;; otherwise lookup nt to t
+
+; get hl_elem at offset
+; get ll for hl_elem
+; get offset for ll_elem in ll
+; return offset for t in ll
+
+
+;; get hl_elem at offset in part
+hl_elem = part.lines.head
+while hl_elem and off <= lnum do
+	if hl_elem.type == HL_ELEM_TYPE.TEXT then 
+		if off == lnum then
+			break
+		end
+		off = off + 1
+	elseif hl_elem.type == HL_ELEM_TYPE.REFERENCE then
+		local ref_size = self:get_size(hl_elem)
+		if off + ref_size <= lnum then
+			off = off + ref_size
+		elseif not self:is_recursive(hl_elem) then
+			return self:get_hl_elem_at(self.sections[hl_elem.name], lnum - off, prefix .. hl_elem.prefix)
+		else
+			return
+		end
+	end
+	hl_elem = hl_elem.next
+end
+
+;; get hl_elem at offset
+local hl_elem, prefix = hl:get_hl_elem_at(root_section, lnum)
+if not hl_elem then
+	return
+end
+
+;; get ll for hl_elem
+local ll_elem = hl_elem.ll_elem
+if not ll_elem then
+	return
+end
+
+local ll = ll_elem.list
+if not ll then
+	return
+end
+
+;; get offset for ll_elem in ll
+local off = 0
+ll_elem = ll_elem.prev
+while ll_elem do
+	off = off + 1
+	ll_elem =  ll_elem.prev
+end
+
+;; return offset for t in ll
+return ll, off, prefix
+
+;; skip fetch offset if filler
+if hl_elem.type == HL_ELEM_TYPE.FILLER then
+	return
+end
+
+;; implement
+function M.get_line_type(buf, lnum)
+	; check cache if lnum is close for line type
+	; otherwise lookup line type
+end
+
+;; otherwise lookup line type
+local ll = lls[buf]
+if ll then
+	local ll_elem = ll.head
+	for i=1,lnum do
+		if not ll_elem then
+			return
+		end
+		ll_elem = ll_elem.next
+	end
+
+	local hl_elem = ll_elem.hl_elem
+	if hl_elem then
+		return hl_elem.type
+	end
+end
+
+;; export hl elem type
+M.HL_ELEM_TYPE = HL_ELEM_TYPE

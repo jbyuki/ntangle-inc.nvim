@@ -1,0 +1,10 @@
+;;; ntangle-inc
+:: ../lua/ntangle-inc/init.lua
+local M = {}
+; variables
+; declare
+; implement
+return M
+
+;; variables
+M.ntangle_folder = ".ntangle"

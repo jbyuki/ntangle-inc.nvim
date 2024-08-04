@@ -1,0 +1,53 @@
+;;; ../ntangle-inc
+;; set indent expr for buffer
+vim.bo[ev.buf].indentexpr = "v:lua.require'ntangle-inc'.indentexpr()"
+
+;; implement
+function M.indentexpr()
+	local line = vim.v.lnum-1
+
+	; get mirror buffer and corrected line for indent
+	; get indent using nvim treesitter
+end
+
+;; get mirror buffer and corrected line for indent
+local buf = vim.api.nvim_get_current_buf()
+local ll = M.lls[buf]
+if not ll then
+	return -1
+end
+local hl = M.ll_to_hl[ll]
+
+if not hl then
+	return -1
+end
+
+local nt_infos = M.TtoNT(buf, line)
+local root_section
+local line
+local root_section
+local bufnr
+for _, nt_info in ipairs(nt_infos) do
+	root_section = nt_info[2]
+	line = nt_info[3]
+  bufnr = M.root_to_mirror_buf[root_section]
+	break
+end
+
+if #nt_infos == 0 or not bufnr then
+	return -1
+end
+
+;; get indent using nvim treesitter
+local found, mod  = pcall(require, "nvim-treesitter.indent")
+if found then
+	return vim.api.nvim_buf_call(bufnr, function() return mod.get_indent(line+1) end)
+end
+
+;; silently set filetype for buffer
+if lang then
+	vim.o.eventignore = "all"
+	vim.bo[buf].ft = lang
+	vim.o.eventignore = ""
+end
+

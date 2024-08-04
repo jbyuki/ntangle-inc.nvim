@@ -1,0 +1,35 @@
+;;; ntangle-inc
+;; start autocommand for monitoring new buffers if not yet
+vim.api.nvim_create_augroup("ntangle-inc", { clear = false })
+local autocmds = vim.api.nvim_get_autocmds({group = "ntangle-inc"})
+if #autocmds == 0 then
+	vim.api.nvim_create_autocmd({"BufNewFile", "BufReadPost"}, {
+		pattern = {"*.t2"},
+		callback = function(ev)
+			M.add_tmonitor(ev.buf)
+			; start treesitter highlighter
+			; attach lsp keycommands
+			; set indent expr for buffer
+		end
+	})
+end
+
+;; check if already added as file
+local path = vim.api.nvim_buf_get_name(buf)
+path = vim.uv.fs_realpath(path)
+ll = lls[path]
+if ll then
+	file_added = true 
+	lls[buf] = ll
+	lls[path] = nil
+end
+
+;; attach lsp keycommands
+vim.bo[ev.buf].omnifunc = 'v:lua.vim.lsp.omnifunc'
+
+-- Buffer local mappings.
+-- See `:help vim.lsp.*` for documentation on any of the below functions
+local opts = { buffer = ev.buf }
+vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, opts)
+vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
+vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)

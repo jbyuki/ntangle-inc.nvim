@@ -1,0 +1,34 @@
+;;; ntangle-inc
+;; implement
+function HL:getlines(hl_elem, lnum, lines, prefix)
+	local prefix = pprefix or ""
+	while hl_elem and lnum > 0 do
+		if hl_elem.type == HL_ELEM_TYPE.SECTION_PART then
+			; go up stack and get next
+		elseif hl_elem.type == HL_ELEM_TYPE.REFERENCE then
+			; go down stack and get next
+		elseif hl_elem.type == HL_ELEM_TYPE.TEXT then
+			; append text to lines
+		end
+		hl_elem = hl_elem.next
+	end
+	return lnum
+end
+
+;; go up stack and get next
+return lnum
+
+;; go down stack and get next
+local section = self.sections[hl_elem.name]
+if section then
+	local part = section.parts.head
+	while part and lnum > 0 do
+		lnum = self:getlines(part.lines.head, lnum, lines, prefix .. hl_elem.prefix)
+		part = part.next
+	end
+end
+
+;; append text to lines
+table.insert(lines, prefix .. hl_elem.ll_elem.str)
+lnum = lnum - 1
+

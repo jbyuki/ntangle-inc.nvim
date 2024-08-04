@@ -1,0 +1,112 @@
+;;; ntangle-inc
+;; variables
+local LL = {}
+
+;; implement
+function LL:new()
+	local ll = {}
+	; init linked list
+	return setmetatable(ll, { __index = self })
+end
+
+function LL:push_back(data)
+	; if list empty set head and tail
+	; otherwise augment with next and prev
+end
+
+;; init linked list
+ll.head = nil
+ll.tail = nil
+
+;; if list empty set head and tail
+if not self.head then
+	self.head = data
+	self.tail = data
+	; add pointer to list
+
+;; otherwise augment with next and prev
+else 
+	self.tail.next = data
+	data.prev = self.tail
+	self.tail = data
+	; add pointer to list
+end
+
+;; implement
+function LL:is_empty()
+	return self.head == nil
+end
+
+function LL:push_front(data)
+	; if list empty set head and tail
+	; otherwise put in front
+end
+
+;; otherwise put in front
+else
+	self.head.prev = data
+	data.next = self.head
+	self.head = data
+	; add pointer to list
+end
+
+;; implement
+function LL:remove(node)
+	; update prev and next node
+	; if last node set head and tail to nil
+	; reset next and prev from deleted node
+end
+
+;; update prev and next node
+if node.next then
+	node.next.prev = node.prev 
+end
+
+if node.prev then
+	node.prev.next = node.next 
+end
+
+;; if last node set head and tail to nil
+if node == self.head then
+	self.head = self.head.next
+end
+
+if node == self.tail then
+	self.tail = self.tail.prev
+end
+
+;; reset next and prev from deleted node
+node.prev = nil
+node.next = nil
+
+;; implement
+function LL:insert(data, prev)
+	; if no prev push front
+	else
+		; otherwise add to prev
+		; if last element update tail
+	end
+end
+
+;; if no prev push front
+if not prev then
+	self:push_front(data)
+
+;; otherwise add to prev
+data.next = prev.next
+data.prev = prev
+; add pointer to list
+
+if data.next then
+	data.next.prev = data
+end
+
+prev.next = data
+
+;; if last element update tail
+if not data.next then
+	self.tail = data
+end
+
+;; add pointer to list
+data.list = self

@@ -1,0 +1,147 @@
+;;; ../ntangle-inc
+;; implement
+function M.start()
+	; register test mirror buffer root cb
+	; register test mirror buffer change cb
+	M.monitor()
+end
+
+;; register test mirror buffer root cb
+M.on_root(function(hl, root_section, added)
+	if added then
+		; create test mirror buffer 
+	else
+		; remove test mirror buffer
+	end
+end)
+
+;; register test mirror buffer change cb
+M.on_change(function(nt_infos, lnum_add, lnum_rem, hl_elem)
+	; reorder nt infos for sequential modification
+	local prev_hl
+	; change cb mirror test variables
+	for _, nt_info in ipairs(nt_infos) do
+		local hl, section, off, prefix = unpack(nt_info)
+		; get buf for root section
+		if buf then
+			; if hl does not match previous get lines
+			; check if buffer is empty
+			; append prefix to lines
+			; apply text modification using unsafe
+			; update number of lines for buf
+		end
+	end
+end)
+
+;; reorder nt infos for sequential modification
+if lnum_add > 0 then
+	table.sort(nt_infos, function(a,b) 
+		return a[3] < b[3]
+	end)
+else
+	table.sort(nt_infos, function(a,b) 
+		return a[3] > b[3]
+	end)
+end
+
+;; variables
+M.root_to_mirror_buf = {}
+local root_to_mirror_buf = M.root_to_mirror_buf
+M.mirror_buf_to_root = {}
+local mirror_buf_to_root = M.mirror_buf_to_root
+
+;; create test mirror buffer
+local buf = vim.api.nvim_create_buf(true, true)
+vim.api.nvim_set_option_value("undolevels", -1, { buf = buf })
+-- vim.api.nvim_buf_set_name(buf, root_section.name)
+
+; detect filetype from filename
+
+mirror_buf_to_root[buf] = root_section
+root_to_mirror_buf[root_section] = buf
+
+; save hl for buf
+; attach parser if treesitter highlighter exists
+; attach lsp client to buffer
+; silently set filetype for buffer
+
+;; remove test mirror buffer
+local buf = root_to_mirror_buf[root_section]
+if buf then
+	vim.schedule(function()
+		vim.api.nvim_buf_delete(buf, { force = true })
+	end)
+	root_to_mirror_buf[root_section] = nil
+	mirror_buf_to_root[buf] = nil
+
+	; replace section to buf if other exists
+
+	; remove hl from buf
+end
+
+;; replace section to buf if other exists
+for buf, section in pairs(mirror_buf_to_root) do
+	if root_section == section then
+		root_to_mirror_buf[root_section] = buf
+		break
+	end
+end
+
+;; get buf for root section
+local buf = root_to_mirror_buf[section]
+
+;; change cb mirror test variables
+local lines = {}
+
+;; if hl does not match previous get lines
+if hl ~= prev_hl then
+	lines = {}
+	hl:getlines(hl_elem, lnum_add, lines)
+	prev_hl = hl
+end
+
+;; variables
+local num_root = {}
+
+;; create test mirror buffer
+num_root[buf] = 0
+
+;; check if buffer is empty
+local buf_empty = num_root[buf] == 0
+
+;; append prefix to lines
+local prefix_lines = {}
+for i=1,#lines do
+	table.insert(prefix_lines, prefix .. lines[i]) 
+end
+
+;; apply text modification using unsafe
+if buf_empty then
+	vim.api.nvim_buf_set_lines_unsafe(buf, 0, -1, false, prefix_lines)
+else
+	vim.api.nvim_buf_set_lines_unsafe(buf, off, off+lnum_rem, false, prefix_lines)
+end
+
+;; update number of lines for buf
+num_root[buf] = num_root[buf] + lnum_add - lnum_rem
+
+;; variables
+M.buf_to_hl = {}
+
+;; save hl for buf
+M.buf_to_hl[buf] = hl
+
+;; remove hl from buf
+M.buf_to_hl[buf] = nil
+
+;; variables
+M.buf_filetype = {}
+local buf_filetype  = M.buf_filetype
+
+;; detect filetype from filename
+local lang = vim.filetype.match({filename = root_section.name})
+if lang then
+	buf_filetype[buf] = lang
+end
+
+

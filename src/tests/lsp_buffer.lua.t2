@@ -1,0 +1,55 @@
+;;; ../ntangle-inc
+;; attach lsp client to buffer
+local lspconfig_found, lspconfig = pcall(require, "lspconfig")
+if lang and lspconfig_found then
+	local util = require"lspconfig.util"
+	local configs = util.get_config_by_ft(lang)
+	if #configs > 0 then
+		local config = configs[1]
+		; try add lsp to buffer
+	end
+end
+
+
+;; try add lsp to buffer
+local hl_path = M.hl_to_hl_path[hl]
+if hl_path then
+	local parent_path = vim.fs.dirname(hl_path)
+	local bufname = vim.fs.joinpath(parent_path, M.ntangle_folder, root_section.name)
+	local buf_path = util.path.sanitize(bufname)
+	; save buf path for lsp
+	local manager = config.manager
+	if manager then
+		; find root dir
+		if root_dir then
+			; add lsp using root dir
+		elseif manager.config.single_file_support then
+			; make pseudo root dir
+			; add lsp using pseudo root dir
+		end
+	end
+end
+
+;; find root dir
+local root_dir
+if config.get_root_dir then
+	root_dir = config.get_root_dir(buf_path, buf)
+end
+
+;; add lsp using root dir
+manager:add(root_dir, false, buf)
+
+;; make pseudo root dir
+local pseudo_root = vim.fs.dirname(buf_path)
+
+;; add lsp using pseudo root dir
+manager:add(pseudo_root, true, buf)
+
+;; variables
+M.buf_to_uri = {}
+M.uri_to_buf = {}
+
+;; save buf path for lsp
+local uri = vim.uri_from_fname(buf_path)
+M.buf_to_uri[buf] = uri
+M.uri_to_buf[uri] = buf

@@ -1,0 +1,308 @@
+;;; ntangle-inc
+;; implement
+function M.add_tmonitor(buf)
+	; convert buf if 0
+	; check if buf is already added
+
+	local file_added = false
+	local ll
+	; check if already added as file
+
+	if not file_added then
+		; initial parse
+	end
+
+	; start monitor changes in buffer
+end
+
+;; convert buf if 0
+buf = buf == 0 and vim.api.nvim_get_current_buf() or buf
+
+;; initial parse
+; read all lines from buf
+; parse all lines
+
+;; read all lines from buf
+local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+
+;; parse all lines
+; create ll for buf
+for i, line in ipairs(lines) do
+	; add line to ll
+	; add line to hl
+end
+; add filler line
+
+;; variables
+M.lls = {}
+local lls = M.lls
+
+;; create ll for buf
+ll = LL:new()
+lls[buf] = ll
+
+;; add line to ll
+local ll_elem = { str = line }
+ll:push_back(ll_elem)
+
+;; add line to hl
+M.insert_hl(buf, ll, ll_elem)
+
+;; check if buf is already added
+if lls[buf] then
+	return
+end
+
+;; start monitor changes in buffer
+vim.api.nvim_buf_attach(buf, false, {
+	on_bytes = function(...)
+		local args = { ... }
+
+		local res = ll_to_hl[ll]
+		res = ll_to_hl[ll]
+
+		; detach if asked
+		; unpack on bytes arguments
+
+		; fetch first modified line
+		; if single text modified line
+		; if single non text modified line
+		else
+			; remove deleted parts
+			; add added parts
+		end
+	end
+})
+
+;; unpack on bytes arguments
+local srow = args[4]
+local scol = args[5]
+
+local orow = args[7]
+local ocol = args[8]
+
+local nrow = args[10]
+local ncol = args[11]
+
+;; fetch first modified line
+local line = ll.head
+
+for i=1,srow do
+	line = line.next
+end
+
+;; if single text modified line
+if orow == 0 and nrow == 0 and line.hl_elem.type == HL_ELEM_TYPE.TEXT then
+	local new_text = vim.api.nvim_buf_get_lines(buf, srow, srow+1, true)
+	if M.parse_line(line.str) == HL_ELEM_TYPE.TEXT then
+		line.str = new_text[1]
+		; update text line internally
+	else
+		; replace text line
+	end
+
+;; update text line internally
+M.update_text(ll, line)
+
+;; implement
+function M.update_text(ll, ll_elem)
+	local hl_elem = ll_elem.hl_elem
+	; update text callback
+end
+
+;; remove deleted parts
+if orow ~= 0 or ocol ~= 0 then
+	for i=0,orow do
+		if i == 0 then
+			; handle first line deletion 
+		elseif i == orow then
+			; handle last line deletion 
+		else
+			; handle line deletion
+		end
+	end
+end
+
+;; handle first line deletion 
+; save first deleted line
+if orow > 0 then
+	; remove first line suffix
+elseif orow == 0 then
+	; remove first line partly
+end
+
+;; remove first line suffix
+M.remove_hl(buf, ll, line)
+line.str = line.str:sub(1,scol)
+M.insert_hl(buf, ll, line)
+line = line.next
+
+;; remove first line partly
+M.remove_hl(buf, ll, line)
+line.str = line.str:sub(1,scol) .. line.str:sub(scol+ocol+1)
+M.insert_hl(buf, ll, line)
+
+;;- remove deleted parts
+local first_line
+
+;; save first deleted line
+first_line = line
+
+;; handle last line deletion 
+if not line.str then
+	; handle filler line deletion
+else
+	local suffix = line.str:sub(ocol+1)
+	if suffix ~= "" then
+		M.remove_hl(buf, ll, first_line)
+		first_line.str = first_line.str .. suffix
+		M.insert_hl(buf, ll, first_line)
+	end
+
+	M.remove_hl(buf, ll, line)
+	ll:remove(line)
+	line = first_line
+end
+
+;; handle filler line deletion
+if line.prev then
+	local toremove = line.prev
+	M.remove_hl(buf, ll, toremove)
+	ll:remove(toremove)
+end
+
+;; handle line deletion
+local toremove = line
+line = line.next
+M.remove_hl(buf, ll, toremove)
+ll:remove(toremove)
+
+;; add added parts
+; fetch appended text
+; insert appended parts
+
+;; fetch appended text
+local appended_lines = vim.api.nvim_buf_get_lines(buf, srow, srow+nrow+1, false)
+
+;; insert appended parts
+if ncol ~= 0 or nrow ~= 0 then
+	for i=0,nrow do
+		; handle if inserting in filler line
+		if i == 0 then
+			; insert first line
+		elseif i == nrow then
+			; insert last line
+		else
+			; insert line in the middle
+		end
+		; early exit if filler line push
+		; create new line if not last one
+	end
+end
+
+
+;;- insert appended parts
+local suffix_first_line = ""
+
+;; insert first line
+local inserted
+if nrow == 0 then
+	inserted = appended_lines[1]:sub(scol+1, scol+ncol)
+
+	if inserted ~= "" then
+		M.remove_hl(buf, ll, line)
+		line.str = line.str:sub(1,scol) .. inserted .. line.str:sub(scol+1)
+		M.insert_hl(buf, ll, line)
+	end
+else
+	inserted = appended_lines[1]:sub(scol+1)
+	suffix_first_line = line.str:sub(scol+1)
+
+	if inserted ~= "" or suffix_first_line ~= "" then
+		M.remove_hl(buf, ll, line)
+		line.str = line.str:sub(1,scol) .. inserted
+		M.insert_hl(buf, ll, line)
+	end
+end
+
+;; insert last line
+local prefix = appended_lines[#appended_lines]:sub(1,ncol)
+
+line.str = prefix .. suffix_first_line
+M.insert_hl(buf, ll, line)
+
+;; insert line in the middle
+line.str = appended_lines[i+1]
+M.insert_hl(buf, ll, line)
+
+;; create new line if not last one 
+if i < nrow then
+	local new_line = { str = "" }
+	ll:insert(new_line, line)
+	line = new_line
+end
+
+;; handle if inserting in filler line
+local filler_push = false
+if not line.str and i == 0 then
+	assert(nrow == 1, "Unhandled case for insert")
+	local new_line = { str = "" }
+
+	if line.prev then
+		ll:insert(new_line, line.prev)
+	else
+		ll:push_front(new_line)
+	end
+
+	M.insert_hl(buf, ll, new_line)
+	line = new_line
+	filler_push = true 
+end
+
+;; early exit if filler line push
+if filler_push then
+	break
+end
+
+;; replace text line
+M.remove_hl(buf, ll, line)
+line.str = new_text[1]
+M.insert_hl(buf, ll, line)
+
+;; if single non text modified line
+elseif nrow == 0 and orow == 0 then
+	local new_text = vim.api.nvim_buf_get_lines(buf, srow, srow+1, false)
+	M.remove_hl(buf, ll, line)
+	line.str = new_text[1]
+	M.insert_hl(buf, ll, line)
+
+;; implement
+function M.monitor()
+	; get all bufs
+	; filter bufs with t2 extension
+	; for all bufs start buf monitoring
+	; start autocommand for monitoring new buffers if not yet
+end
+
+;; get all bufs
+local bufs = vim.api.nvim_list_bufs()
+
+;; filter bufs with t2 extension
+local t2_bufs = {}
+for _, buf in ipairs(bufs) do
+	source = vim.api.nvim_buf_get_name(buf)
+	if source:match('%.t2$') then
+		table.insert(t2_bufs, buf)
+	end
+end
+
+
+;; for all bufs start buf monitoring
+for _, buf in ipairs(t2_bufs) do
+	M.add_tmonitor(buf)
+end
+
+;; add filler line
+local ll_elem = { line = nil }
+ll:push_back(ll_elem)
+M.insert_hl(buf, ll, ll_elem)
