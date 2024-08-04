@@ -1,4 +1,4 @@
-ntangle-inc
+ntangle-inc.nvim
 ===========
 
 **Incremental tangling** for [ntangle.nvim](https://github.com/jbyuki/ntangle.nvim.git)
