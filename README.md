@@ -1,8 +1,7 @@
 ntangle-inc
 ===========
 
-Code for **incremental tangling** towards full support of the literate programming environment [ntangle.nvim](https://github.com/jbyuki/ntangle.nvim.git) into Neovim.
-
+**Incremental tangling** for [ntangle.nvim](https://github.com/jbyuki/ntangle.nvim.git)
 
 Testing
 -------
