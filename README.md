@@ -7,7 +7,7 @@ See [here](https://github.com/jbyuki/ntangle.nvim/wiki/ntangle%E2%80%90inc.nvim)
 Testing
 -------
 
-Note that it is **very** experimental, proceed only if know you what are you doing.
+Note that it is **very** experimental, proceed only if you know what are you doing.
 
 * Compile [this neovim fork](https://github.com/jbyuki/neovim)
 
