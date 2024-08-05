@@ -68,7 +68,7 @@ function HL:getlines_all(hl_elem)
 	local lines = {}
 	local prefix = ""
 	if hl_elem.type == HL_ELEM_TYPE.SECTION_PART then
-		self:getlines_next(hl_elem.section.head, lines)
+		self:getlines_next(hl_elem.lines.head, lines)
 	elseif hl_elem.type == HL_ELEM_TYPE.REFERENCE then
 		; go down stack and get next all
 	elseif hl_elem.type == HL_ELEM_TYPE.TEXT then

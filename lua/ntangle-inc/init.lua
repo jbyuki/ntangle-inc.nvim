@@ -122,7 +122,7 @@ function HL:getlines_all(hl_elem)
 	local lines = {}
 	local prefix = ""
 	if hl_elem.type == HL_ELEM_TYPE.SECTION_PART then
-		self:getlines_next(hl_elem.section.head, lines)
+		self:getlines_next(hl_elem.lines.head, lines)
 	elseif hl_elem.type == HL_ELEM_TYPE.REFERENCE then
 		local section = self.sections[hl_elem.name]
 		if section then
