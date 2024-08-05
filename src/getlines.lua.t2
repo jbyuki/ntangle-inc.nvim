@@ -33,7 +33,7 @@ table.insert(lines, prefix .. hl_elem.ll_elem.str)
 lnum = lnum - 1
 
 ;; implement
-function HL:getlines_all(hl_elem, lines, prefix)
+function HL:getlines_next(hl_elem, lines, prefix)
 	local prefix = prefix or ""
 
 	while hl_elem do
@@ -57,8 +57,27 @@ table.insert(lines, prefix .. hl_elem.ll_elem.str)
 local section = self.sections[hl_elem.name]
 if section then
 	local part = section.parts.head
-	while part and lnum > 0 do
-		self:getlines_all(part.lines.head, lines, prefix .. hl_elem.prefix)
+	while part  do
+		self:getlines_next(part.lines.head, lines, prefix .. hl_elem.prefix)
 		part = part.next
 	end
 end
+
+;; implement
+function HL:getlines_all(hl_elem)
+	local lines = {}
+	local prefix = ""
+	if hl_elem.type == HL_ELEM_TYPE.SECTION_PART then
+		self:getlines_next(hl_elem.section.head, lines)
+	elseif hl_elem.type == HL_ELEM_TYPE.REFERENCE then
+		; go down stack and get next all
+	elseif hl_elem.type == HL_ELEM_TYPE.TEXT then
+		local prefix = ""
+		; append text to lines_all
+	else
+		assert(false)
+	end
+	return lines
+end
+
+

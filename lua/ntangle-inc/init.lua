@@ -92,7 +92,7 @@ function HL:getlines(hl_elem, lnum, lines, prefix)
 	return lnum
 end
 
-function HL:getlines_all(hl_elem, lines, prefix)
+function HL:getlines_next(hl_elem, lines, prefix)
 	local prefix = prefix or ""
 
 	while hl_elem do
@@ -104,11 +104,12 @@ function HL:getlines_all(hl_elem, lines, prefix)
 			local section = self.sections[hl_elem.name]
 			if section then
 				local part = section.parts.head
-				while part and lnum > 0 do
-					self:getlines_all(part.lines.head, lines, prefix .. hl_elem.prefix)
+				while part  do
+					self:getlines_next(part.lines.head, lines, prefix .. hl_elem.prefix)
 					part = part.next
 				end
 			end
+
 		elseif hl_elem.type == HL_ELEM_TYPE.TEXT then
 			table.insert(lines, prefix .. hl_elem.ll_elem.str)
 
@@ -116,6 +117,32 @@ function HL:getlines_all(hl_elem, lines, prefix)
 		hl_elem = hl_elem.next
 	end
 end
+
+function HL:getlines_all(hl_elem)
+	local lines = {}
+	local prefix = ""
+	if hl_elem.type == HL_ELEM_TYPE.SECTION_PART then
+		self:getlines_next(hl_elem.section.head, lines)
+	elseif hl_elem.type == HL_ELEM_TYPE.REFERENCE then
+		local section = self.sections[hl_elem.name]
+		if section then
+			local part = section.parts.head
+			while part  do
+				self:getlines_next(part.lines.head, lines, prefix .. hl_elem.prefix)
+				part = part.next
+			end
+		end
+
+	elseif hl_elem.type == HL_ELEM_TYPE.TEXT then
+		local prefix = ""
+		table.insert(lines, prefix .. hl_elem.ll_elem.str)
+
+	else
+		assert(false)
+	end
+	return lines
+end
+
 
 function HL:new()
 	local hl = {}
