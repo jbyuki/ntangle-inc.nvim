@@ -28,6 +28,7 @@ local HL_ELEM_TYPE = {
 
 M.HL_ELEM_TYPE = HL_ELEM_TYPE
 
+
 M.ll_to_hl = {}
 local ll_to_hl = M.ll_to_hl
 setmetatable(ll_to_hl, {__mode = "k"})
@@ -66,7 +67,7 @@ local lls = M.lls
 local trim1
 
 function HL:getlines(hl_elem, lnum, lines, prefix)
-	local prefix = pprefix or ""
+	local prefix = prefix or ""
 	while hl_elem and lnum > 0 do
 		if hl_elem.type == HL_ELEM_TYPE.SECTION_PART then
 			return lnum
@@ -89,6 +90,31 @@ function HL:getlines(hl_elem, lnum, lines, prefix)
 		hl_elem = hl_elem.next
 	end
 	return lnum
+end
+
+function HL:getlines_all(hl_elem, lines, prefix)
+	local prefix = prefix or ""
+
+	while hl_elem do
+		if hl_elem.type == HL_ELEM_TYPE.SECTION_PART then
+			break
+		elseif hl_elem.type == HL_ELEM_TYPE.FILLER then
+			break
+		elseif hl_elem.type == HL_ELEM_TYPE.REFERENCE then
+			local section = self.sections[hl_elem.name]
+			if section then
+				local part = section.parts.head
+				while part and lnum > 0 do
+					self:getlines_all(part.lines.head, lines, prefix .. hl_elem.prefix)
+					part = part.next
+				end
+			end
+		elseif hl_elem.type == HL_ELEM_TYPE.TEXT then
+			table.insert(lines, prefix .. hl_elem.ll_elem.str)
+
+		end
+		hl_elem = hl_elem.next
+	end
 end
 
 function HL:new()
@@ -1333,6 +1359,26 @@ function M.get_line_type(buf, lnum)
 		if hl_elem then
 			return hl_elem.type
 		end
+	end
+
+end
+
+function M.Tto_hl_elem(buf, lnum)
+	local ll = lls[buf]
+	if ll then
+		local ll_elem = ll.head
+		for i=1,lnum do
+			if not ll_elem then
+				return
+			end
+			ll_elem = ll_elem.next
+		end
+
+		if not ll_elem then
+			return
+		end
+
+		return ll_elem.hl_elem
 	end
 
 end

@@ -227,3 +227,30 @@ end
 
 ;; export hl elem type
 M.HL_ELEM_TYPE = HL_ELEM_TYPE
+
+;; implement
+function M.Tto_hl_elem(buf, lnum)
+	; check cache if lnum is close for t to hl_elem
+	; otherwise lookup t to hl_elem
+end
+
+;; otherwise lookup t to hl_elem
+local ll = lls[buf]
+if ll then
+	local ll_elem = ll.head
+	for i=1,lnum do
+		if not ll_elem then
+			return
+		end
+		ll_elem = ll_elem.next
+	end
+
+	; lookup hl_elem for ll elem
+end
+
+;; lookup hl_elem for ll elem
+if not ll_elem then
+	return
+end
+
+return ll_elem.hl_elem
