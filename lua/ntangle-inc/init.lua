@@ -1523,9 +1523,11 @@ function M.indentexpr()
 	local line
 	local root_section
 	local bufnr
+	local prefix
 	for _, nt_info in ipairs(nt_infos) do
 		root_section = nt_info[2]
 		line = nt_info[3]
+		prefix = nt_info[4]
 	  bufnr = M.root_to_mirror_buf[root_section]
 		break
 	end
@@ -1536,7 +1538,21 @@ function M.indentexpr()
 
 	local found, mod  = pcall(require, "nvim-treesitter.indent")
 	if found then
-		return vim.api.nvim_buf_call(bufnr, function() return mod.get_indent(line+1) end)
+		return vim.api.nvim_buf_call(bufnr, function()
+			local indent = mod.get_indent(line+1) 
+			if indent >= 0 then
+				local num_spaces = 0
+				if #prefix > 0 then
+					if prefix:sub(1,1) == "\t" then
+						num_spaces = #prefix * vim.o.ts
+					else
+						num_spaces = #prefix
+					end
+				end
+				return math.max(indent-num_spaces, 0)
+			end
+			return indent
+		end)
 	end
 
 end
