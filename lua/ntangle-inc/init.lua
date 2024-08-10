@@ -1622,10 +1622,10 @@ function M.start()
 			M.buf_to_hl[buf] = hl
 
 			if lang then
-				local lls = {}
+				local attached_lls = {}
 				for _ll, _hl in pairs(ll_to_hl) do
 					if _hl == hl then
-						lls[_ll] = true
+						attached_lls[_ll] = true
 					end
 				end
 
@@ -1639,8 +1639,9 @@ function M.start()
 
 				if parser_installed then
 					for _, highlighter in pairs(vim.treesitter.highlighter.active) do
-						if highlighter._ntangle_ll and lls[highlighter._ntangle_ll] then
-								highlighter.trees[buf] = vim.treesitter.get_parser(buf, lang)
+						local ll = lls[highlighter.bufnr]
+						if ll and attached_lls[ll] then
+							highlighter.trees[buf] = vim.treesitter.get_parser(buf, lang)
 						end
 					end
 				end
@@ -2006,9 +2007,9 @@ function M.monitor()
 		vim.api.nvim_create_autocmd({"BufNewFile", "BufReadPost"}, {
 			pattern = {"*.t2"},
 			callback = function(ev)
-				M.add_tmonitor(ev.buf)
-				vim.treesitter.start(ev.buf, nil)
+				vim.treesitter.highlighter.new(ev.buf, {})
 
+				M.add_tmonitor(ev.buf)
 				vim.bo[ev.buf].omnifunc = 'v:lua.vim.lsp.omnifunc'
 
 				-- Buffer local mappings.

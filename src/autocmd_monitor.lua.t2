@@ -6,8 +6,8 @@ if #autocmds == 0 then
 	vim.api.nvim_create_autocmd({"BufNewFile", "BufReadPost"}, {
 		pattern = {"*.t2"},
 		callback = function(ev)
-			M.add_tmonitor(ev.buf)
 			; start treesitter highlighter
+			M.add_tmonitor(ev.buf)
 			; attach lsp keycommands
 			; set indent expr for buffer
 		end
