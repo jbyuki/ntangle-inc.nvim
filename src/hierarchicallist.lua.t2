@@ -517,7 +517,7 @@ function HL:remove_reference(ll_elem)
 	; remove reference from reference lists
 	; remove elem from part
 	; unlink hl elem
-	; remove section if no more ref
+	-- ; remove section if no more ref
 end
 
 ;; update size reference remove

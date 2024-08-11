@@ -938,10 +938,7 @@ function HL:remove_reference(ll_elem)
 
 	ll_elem.hl_elem = nil
 
-	if #section.refs == 0 then
-		self.sections[name] = nil
-	end
-
+	-- ; remove section if no more ref
 end
 
 function HL:remove_text(ll_elem)
