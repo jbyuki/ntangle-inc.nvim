@@ -1901,22 +1901,7 @@ function M.add_tmonitor(buf)
 
 				if ncol ~= 0 or nrow ~= 0 then
 					for i=0,nrow do
-						local filler_push = false
-						if not line.str and i == 0 then
-							assert(nrow == 1, "Unhandled case for insert")
-							local new_line = { str = "" }
-
-							if line.prev then
-								ll:insert(new_line, line.prev)
-							else
-								ll:push_front(new_line)
-							end
-
-							M.insert_hl(buf, ll, new_line)
-							line = new_line
-							filler_push = true 
-						end
-
+						local replace_filler = false
 						if i == 0 then
 							local inserted
 							if nrow == 0 then
@@ -1924,37 +1909,66 @@ function M.add_tmonitor(buf)
 
 								if inserted ~= "" then
 									M.remove_hl(buf, ll, line)
+									if not line.str then
+										replace_filler = true
+										line.str = line.str or ""
+									end
+
 									line.str = line.str:sub(1,scol) .. inserted .. line.str:sub(scol+1)
 									M.insert_hl(buf, ll, line)
 								end
 							else
 								inserted = appended_lines[1]:sub(scol+1)
+
+								if not line.str then
+									replace_filler = true
+									line.str = line.str or ""
+								end
+
 								suffix_first_line = line.str:sub(scol+1)
 
 								if inserted ~= "" or suffix_first_line ~= "" then
 									M.remove_hl(buf, ll, line)
 									line.str = line.str:sub(1,scol) .. inserted
 									M.insert_hl(buf, ll, line)
+								else
+									replace_filler = false
 								end
 							end
 
 						elseif i == nrow then
 							local prefix = appended_lines[#appended_lines]:sub(1,ncol)
 
-							line.str = prefix .. suffix_first_line
-							M.insert_hl(buf, ll, line)
+							if not line.str then
+								replace_filler = true
+								line.str = line.str or ""
+							end
+
+							if prefix ~= "" or suffix_first_line ~= "" then
+								line.str = prefix .. suffix_first_line
+								M.insert_hl(buf, ll, line)
+							else
+								replace_filler = false
+							end
 
 						else
+							if not line.str then
+								replace_filler = true
+								line.str = line.str or ""
+							end
+
 							line.str = appended_lines[i+1]
 							M.insert_hl(buf, ll, line)
 
 						end
-						if filler_push then
-							break
+						if i < nrow and not replace_filler then
+							local new_line = { str = "" }
+							ll:insert(new_line, line)
+							line = new_line
 						end
 
-						if i < nrow then
-							local new_line = { str = "" }
+						if replace_filler then
+							local new_line = { str = nil }
 							ll:insert(new_line, line)
 							line = new_line
 						end

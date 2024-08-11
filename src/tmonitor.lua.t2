@@ -187,7 +187,7 @@ local appended_lines = vim.api.nvim_buf_get_lines(buf, srow, srow+nrow+1, false)
 ;; insert appended parts
 if ncol ~= 0 or nrow ~= 0 then
 	for i=0,nrow do
-		; handle if inserting in filler line
+		local replace_filler = false
 		if i == 0 then
 			; insert first line
 		elseif i == nrow then
@@ -195,7 +195,6 @@ if ncol ~= 0 or nrow ~= 0 then
 		else
 			; insert line in the middle
 		end
-		; early exit if filler line push
 		; create new line if not last one
 	end
 end
@@ -211,40 +210,63 @@ if nrow == 0 then
 
 	if inserted ~= "" then
 		M.remove_hl(buf, ll, line)
+		; check if replace filler
 		line.str = line.str:sub(1,scol) .. inserted .. line.str:sub(scol+1)
 		M.insert_hl(buf, ll, line)
 	end
 else
 	inserted = appended_lines[1]:sub(scol+1)
+
+	; check if replace filler
 	suffix_first_line = line.str:sub(scol+1)
 
 	if inserted ~= "" or suffix_first_line ~= "" then
 		M.remove_hl(buf, ll, line)
 		line.str = line.str:sub(1,scol) .. inserted
 		M.insert_hl(buf, ll, line)
+	else
+		replace_filler = false
 	end
 end
 
 ;; insert last line
 local prefix = appended_lines[#appended_lines]:sub(1,ncol)
 
-line.str = prefix .. suffix_first_line
-M.insert_hl(buf, ll, line)
+; check if replace filler
+if prefix ~= "" or suffix_first_line ~= "" then
+	line.str = prefix .. suffix_first_line
+	M.insert_hl(buf, ll, line)
+else
+	replace_filler = false
+end
 
 ;; insert line in the middle
+; check if replace filler
 line.str = appended_lines[i+1]
 M.insert_hl(buf, ll, line)
 
 ;; create new line if not last one 
-if i < nrow then
+if i < nrow and not replace_filler then
 	local new_line = { str = "" }
 	ll:insert(new_line, line)
 	line = new_line
 end
 
+if replace_filler then
+	local new_line = { str = nil }
+	ll:insert(new_line, line)
+	line = new_line
+end
+
+;; check if replace filler
+if not line.str then
+	replace_filler = true
+	line.str = line.str or ""
+end
+
 ;; handle if inserting in filler line
 local filler_push = false
-if not line.str and i == 0 then
+if not line.str then
 	assert(nrow == 1, "Unhandled case for insert")
 	local new_line = { str = "" }
 
@@ -257,11 +279,6 @@ if not line.str and i == 0 then
 	M.insert_hl(buf, ll, new_line)
 	line = new_line
 	filler_push = true 
-end
-
-;; early exit if filler line push
-if filler_push then
-	break
 end
 
 ;; replace text line
