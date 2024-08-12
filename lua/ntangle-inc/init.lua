@@ -1907,54 +1907,46 @@ function M.add_tmonitor(buf)
 							if nrow == 0 then
 								inserted = appended_lines[1]:sub(scol+1, scol+ncol)
 
-								if inserted ~= "" then
-									M.remove_hl(buf, ll, line)
-									if not line.str then
-										replace_filler = true
-										line.str = line.str or ""
-									end
-
-									line.str = line.str:sub(1,scol) .. inserted .. line.str:sub(scol+1)
-									M.insert_hl(buf, ll, line)
+								M.remove_hl(buf, ll, line)
+								if not line.str then
+									replace_filler = true
 								end
+
+								line.str = line.str or ""
+								line.str = line.str:sub(1,scol) .. inserted .. line.str:sub(scol+1)
+								M.insert_hl(buf, ll, line)
 							else
 								inserted = appended_lines[1]:sub(scol+1)
 
 								if not line.str then
 									replace_filler = true
-									line.str = line.str or ""
 								end
 
+								line.str = line.str or ""
 								suffix_first_line = line.str:sub(scol+1)
 
-								if inserted ~= "" or suffix_first_line ~= "" then
-									M.remove_hl(buf, ll, line)
-									line.str = line.str:sub(1,scol) .. inserted
-									M.insert_hl(buf, ll, line)
-								else
-									replace_filler = false
-								end
+								M.remove_hl(buf, ll, line)
+								line.str = line.str:sub(1,scol) .. inserted
+								M.insert_hl(buf, ll, line)
 							end
 
 						elseif i == nrow then
 							local prefix = appended_lines[#appended_lines]:sub(1,ncol)
 
+							M.remove_hl(buf, ll, line)
 							if not line.str then
 								replace_filler = true
-								line.str = line.str or ""
 							end
 
-							if prefix ~= "" or suffix_first_line ~= "" then
+							if not(not line.str and prefix == "" and suffix_first_line == "") then
 								line.str = prefix .. suffix_first_line
-								M.insert_hl(buf, ll, line)
-							else
-								replace_filler = false
 							end
+							M.insert_hl(buf, ll, line)
 
 						else
+							M.remove_hl(buf, ll, line)
 							if not line.str then
 								replace_filler = true
-								line.str = line.str or ""
 							end
 
 							line.str = appended_lines[i+1]
@@ -1965,12 +1957,14 @@ function M.add_tmonitor(buf)
 							local new_line = { str = "" }
 							ll:insert(new_line, line)
 							line = new_line
+							M.insert_hl(buf, ll, line)
 						end
 
 						if replace_filler then
 							local new_line = { str = nil }
 							ll:insert(new_line, line)
 							line = new_line
+							M.insert_hl(buf, ll, new_line)
 						end
 
 					end
