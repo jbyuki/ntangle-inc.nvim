@@ -437,6 +437,8 @@ function HL:update_size_rec(section_part, delta_size, blacklisted)
 	for _, ref in ipairs(section.refs) do
 		HL:update_size_rec(ref.part, delta_size, blacklisted)
 	end
+
+	blacklisted[section] = nil
 end
 
 function HL:insert_section(ll_elem)
