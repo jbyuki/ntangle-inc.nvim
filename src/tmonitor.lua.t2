@@ -13,6 +13,7 @@ function M.add_tmonitor(buf)
 	end
 
 	; start monitor changes in buffer
+	; start highlight buffer
 end
 
 ;; convert buf if 0
