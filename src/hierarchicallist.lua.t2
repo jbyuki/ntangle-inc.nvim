@@ -683,6 +683,7 @@ for _, path in ipairs(linked) do
 			if #lines > 0 then
 				; create ll linked file
 				; append all to hl
+				; append filler linked file
 			end
 		end
 	elseif not lls[loaded_buf] then
@@ -857,3 +858,8 @@ elseif line_type == LINE_TYPE.FILLER then
 
 ;; set path for hl
 M.hl_to_hl_path[hl] = M.get_hl_path(source, ".")
+
+;; append filler linked file
+local ll_elem = { line = nil }
+ll:push_back(ll_elem)
+M.insert_hl(path, ll, ll_elem)

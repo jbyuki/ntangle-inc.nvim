@@ -216,6 +216,7 @@ function M.insert_hl(source, ll, ll_elem)
 			hl = HL:new()
 
 			M.hl_to_hl_path[hl] = M.get_hl_path(source, ".")
+
 			local it = ll.head.next
 			ll_to_hl[ll] = hl
 			while it do
@@ -1032,6 +1033,9 @@ function M.get_hl(hl_path)
 							M.insert_hl(path, ll, ll_elem)
 						end
 
+						local ll_elem = { line = nil }
+						ll:push_back(ll_elem)
+						M.insert_hl(path, ll, ll_elem)
 					end
 				end
 			elseif not lls[loaded_buf] then
