@@ -1621,13 +1621,7 @@ function M.start()
 			M.buf_to_hl[buf] = hl
 
 			if lang then
-				local attached_lls = {}
-				for _ll, _hl in pairs(ll_to_hl) do
-					if _hl == hl then
-						attached_lls[_ll] = true
-					end
-				end
-
+				-- ; look for lls attached to hl
 
 				local found, parsers = pcall(require, "nvim-treesitter.parsers")
 				local parser_installed = false
@@ -1638,12 +1632,13 @@ function M.start()
 
 
 				if parser_installed then
-					for _, highlighter in pairs(vim.treesitter.highlighter.active) do
-						local ll = lls[highlighter.bufnr]
-						if ll and attached_lls[ll] and not highlighter.trees[buf] then
-							highlighter.trees[buf] = vim.treesitter.get_parser(buf, lang)
-						end
-					end
+					vim.treesitter.get_parser(buf, lang)
+					-- for _, highlighter in pairs(vim.treesitter.highlighter.active) do
+						-- local ll = lls[highlighter.bufnr]
+						-- if ll and attached_lls[ll] and not highlighter.trees[buf] then
+							-- highlighter.trees[buf] = vim.treesitter.get_parser(buf, lang)
+						-- end
+					-- end
 				end
 			end
 
@@ -1979,40 +1974,7 @@ function M.add_tmonitor(buf)
 		end
 	})
 
-	local hl = M.ll_to_hl[ll]
-	if hl then
-		for _, highlighter in pairs(vim.treesitter.highlighter.active) do
-			if buf == highlighter.bufnr then
-				local mirror_bufs = {}
-				local langs = {}
-
-				for _buf, _hl in pairs(M.buf_to_hl) do
-					if _hl == hl and not highlighter.trees[_buf] then
-						local ft = vim.bo[_buf].ft
-						local lang
-						if ft then
-							lang = vim.treesitter.language.get_lang(ft)
-						end
-						if lang then
-							local found, parsers = pcall(require, "nvim-treesitter.parsers")
-							local parser_installed = false
-							if found then
-								parser_installed = parsers.has_parser(lang)
-							end
-
-
-							if parser_installed then
-								highlighter.trees[_buf] = vim.treesitter.get_parser(_buf, lang)
-							end
-						end
-					end
-				end
-			end
-
-			break
-		end
-	end
-
+	-- ; start highlight buffer
 end
 
 function M.update_text(ll, ll_elem)

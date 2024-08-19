@@ -1,17 +1,18 @@
 ;;; ../ntangle-inc
 ;; attach parser if treesitter highlighter exists
 if lang then
-	; look for lls attached to hl
+	-- ; look for lls attached to hl
 
 	; check that parser is installed
 
 	if parser_installed then
-		for _, highlighter in pairs(vim.treesitter.highlighter.active) do
-			local ll = lls[highlighter.bufnr]
-			if ll and attached_lls[ll] and not highlighter.trees[buf] then
-				highlighter.trees[buf] = vim.treesitter.get_parser(buf, lang)
-			end
-		end
+		vim.treesitter.get_parser(buf, lang)
+		-- for _, highlighter in pairs(vim.treesitter.highlighter.active) do
+			-- local ll = lls[highlighter.bufnr]
+			-- if ll and attached_lls[ll] and not highlighter.trees[buf] then
+				-- highlighter.trees[buf] = vim.treesitter.get_parser(buf, lang)
+			-- end
+		-- end
 	end
 end
 
