@@ -253,17 +253,17 @@ function M.parse_line(line)
 		return LINE_TYPE.FILLER
 	end
 
-	local _, _, prefix = line:find("^%s*([:;]*)")
+	local _, _, sprefix, prefix = line:find("^(%s*)([:;]*)")
 	local line_type = nil
 	if prefix == "" then
 		line_type = LINE_TYPE.TEXT
 	elseif prefix == ";" then
 		line_type = LINE_TYPE.REFERENCE
-	elseif prefix == ";;" then
+	elseif prefix == ";;" and sprefix == "" then
 		line_type = LINE_TYPE.SECTION
-	elseif prefix == "::" then
+	elseif prefix == "::" and sprefix == "" then
 		line_type = LINE_TYPE.ROOT_SECTION
-	elseif prefix == ";;;" then
+	elseif prefix == ";;;" and sprefix == "" then
 		line_type = LINE_TYPE.META_SECTION
 	else
 		line_type = LINE_TYPE.TEXT
