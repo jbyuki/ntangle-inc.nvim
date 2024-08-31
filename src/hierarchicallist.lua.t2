@@ -610,7 +610,7 @@ end
 
 ;; join and normalize path and name
 local parentdir = vim.fs.dirname(source)
-local joined = vim.fs.joinpath(parentdir, name)
+local joined = vim.fs.normalize(vim.fs.joinpath(parentdir, name))
 return joined
 
 ;; implement
@@ -649,7 +649,7 @@ local linked = {}
 if info then
 	for name, filetype in vim.fs.dir(dir) do
 		if filetype == "file" and vim.fn.fnamemodify(name, ":e") == "t2" then
-			local fullpath = vim.fs.joinpath(dir, name)
+			local fullpath = vim.fs.normalize(vim.fs.joinpath(dir, name))
 			local f = io.open(fullpath)
 			if f then
 				local content = f:read("*a")

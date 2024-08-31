@@ -965,7 +965,7 @@ function M.get_hl_path(source, name)
 	end
 
 	local parentdir = vim.fs.dirname(source)
-	local joined = vim.fs.joinpath(parentdir, name)
+	local joined = vim.fs.normalize(vim.fs.joinpath(parentdir, name))
 	return joined
 
 end
@@ -985,7 +985,7 @@ function M.get_hl(hl_path)
 		if info then
 			for name, filetype in vim.fs.dir(dir) do
 				if filetype == "file" and vim.fn.fnamemodify(name, ":e") == "t2" then
-					local fullpath = vim.fs.joinpath(dir, name)
+					local fullpath = vim.fs.normalize(vim.fs.joinpath(dir, name))
 					local f = io.open(fullpath)
 					if f then
 						local content = f:read("*a")
@@ -1655,7 +1655,7 @@ function M.start()
 					local hl_path = M.hl_to_hl_path[hl]
 					if hl_path then
 						local parent_path = vim.fs.dirname(hl_path)
-						local bufname = vim.fs.joinpath(parent_path, M.ntangle_folder, root_section.name)
+						local bufname = vim.fs.normalize(vim.fs.joinpath(parent_path, M.ntangle_folder, root_section.name))
 						local buf_path = util.path.sanitize(bufname)
 						local uri = vim.uri_from_fname(buf_path)
 						M.buf_to_uri[buf] = uri
