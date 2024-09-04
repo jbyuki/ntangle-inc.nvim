@@ -305,7 +305,11 @@ function HL:insert_root_section(ll_elem)
 		cb(self, section, true)
 	end
 
-	section.parts:push_back(hl_elem)
+	if prepend then
+		section.parts:push_front(hl_elem)
+	else
+		section.parts:push_back(hl_elem)
+	end
 	hl_elem.section = section
 
 	local toremove = {}
@@ -445,6 +449,12 @@ end
 function HL:insert_section(ll_elem)
 	local line = ll_elem.str
 	local name = trim1(line:sub(3))
+	local prepend = nil
+	if #name > 0 and name:sub(1,1) == "-" then
+		prepend = true
+		name = trim1(name:sub(2))
+	end
+
 
 	local hl_elem = {
 		type = HL_ELEM_TYPE.SECTION_PART,
@@ -471,7 +481,11 @@ function HL:insert_section(ll_elem)
 	end
 
 
-	section.parts:push_back(hl_elem)
+	if prepend then
+		section.parts:push_front(hl_elem)
+	else
+		section.parts:push_back(hl_elem)
+	end
 	hl_elem.section = section
 
 	local toremove = {}

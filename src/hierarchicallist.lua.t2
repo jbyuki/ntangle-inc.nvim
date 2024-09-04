@@ -132,8 +132,19 @@ end
 ;; set section to root
 section.root = true
 
+;; detect prepend section
+local prepend = nil
+if #name > 0 and name:sub(1,1) == "-" then
+	prepend = true
+	name = trim1(name:sub(2))
+end
+
 ;; link section part to section
-section.parts:push_back(hl_elem)
+if prepend then
+	section.parts:push_front(hl_elem)
+else
+	section.parts:push_back(hl_elem)
+end
 hl_elem.section = section
 
 ;; update section part elems
@@ -289,6 +300,7 @@ end
 ;; get section name
 local line = ll_elem.str
 local name = trim1(line:sub(3))
+; detect prepend section
 
 ;; implement
 function HL:insert_reference(ll, ll_elem)
