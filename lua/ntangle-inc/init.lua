@@ -1668,7 +1668,7 @@ function M.start()
 					local config = configs[1]
 					local hl_path = M.hl_to_hl_path[hl]
 					if hl_path then
-						local parent_path = vim.fs.dirname(hl_path)
+						local parent_path = hl_path
 						local bufname = vim.fs.normalize(vim.fs.joinpath(parent_path, M.ntangle_folder, root_section.name))
 						local buf_path = util.path.sanitize(bufname)
 						local uri = vim.uri_from_fname(buf_path)
