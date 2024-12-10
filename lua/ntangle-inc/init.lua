@@ -1,5 +1,10 @@
 -- Generated using ntangle.nvim
 local M = {}
+local enable_analysis_perf = false
+local buf_attach_history = {}
+
+local lnum_to_ll_elem_cache = nil
+
 local HL = {}
 
 local LINE_TYPE = {
@@ -65,6 +70,16 @@ M.lls = {}
 local lls = M.lls
 
 local trim1
+
+function M.start_analysis()
+	enable_analysis_perf = true
+	buf_attach_history = {} 
+end
+
+function M.stop_analysis()
+	enable_analysis_perf = false
+	return buf_attach_history
+end
 
 function HL:getlines(hl_elem, lnum, lines, prefix)
 	local prefix = prefix or ""
@@ -155,6 +170,8 @@ function HL:new()
 end
 
 function M.insert_hl(source, ll, ll_elem)
+	lnum_to_ll_elem_cache = nil
+
 	local line = ll_elem.str
 	local line_type = M.parse_line(line)
 
@@ -732,6 +749,8 @@ function HL:insert_text(ll, ll_elem)
 end
 
 function M.remove_hl(source, ll, ll_elem)
+	lnum_to_ll_elem_cache = nil
+
 	local hl
 	if ll_elem == ll.head then
 		hl = ll_to_hl[ll]
@@ -1225,37 +1244,45 @@ function HL:remove_filler(ll_elem)
 end
 
 function M.TtoNT(buf, lnum)
-	local ll = lls[buf]
-	if ll then
-		local ll_elem = ll.head
-		for i=1,lnum do
+	if false then
+	-- if lnum_to_ll_elem_cache and math.abs(lnum_to_ll_elem_cache[1] - lnum) < 10) then
+	-- 	local cached_ll_elem = lnum_to_ll_elem_cache[2]
+	-- 	if lnum < lnum_to_ll_elem_cache[1] then
+	else
+		local ll = lls[buf]
+		if ll then
+			local ll_elem = ll.head
+			for i=1,lnum do
+				if not ll_elem then
+					return {}
+				end
+				ll_elem = ll_elem.next
+			end
+
+			lnum_to_ll_elem_cache = { lnum, ll_elem }
+
 			if not ll_elem then
 				return {}
 			end
-			ll_elem = ll_elem.next
+
+			local hl_elem = ll_elem.hl_elem
+
+			if not hl_elem or hl_elem.type ~= HL_ELEM_TYPE.TEXT then
+				return {}
+			end
+
+			local hl = ll_to_hl[ll]
+			if not hl then
+				return {}
+			end
+
+			local close = hl:get_nt_from_hl_elem(hl_elem)
+
+			return close
+
 		end
-
-		if not ll_elem then
-			return {}
-		end
-
-		local hl_elem = ll_elem.hl_elem
-
-		if not hl_elem or hl_elem.type ~= HL_ELEM_TYPE.TEXT then
-			return {}
-		end
-
-		local hl = ll_to_hl[ll]
-		if not hl then
-			return {}
-		end
-
-		local close = hl:get_nt_from_hl_elem(hl_elem)
-
-		return close
 
 	end
-
 	return {}
 end
 
@@ -1821,6 +1848,9 @@ function M.add_tmonitor(buf)
 		on_bytes = function(...)
 			local args = { ... }
 
+			local start = vim.uv.hrtime()
+
+
 			local res = ll_to_hl[ll]
 			res = ll_to_hl[ll]
 
@@ -1988,6 +2018,11 @@ function M.add_tmonitor(buf)
 
 
 
+			end
+
+			local stop = vim.uv.hrtime()
+			if enable_analysis_perf then
+				table.insert(buf_attach_history, (stop - start)/1e6)
 			end
 		end
 	})

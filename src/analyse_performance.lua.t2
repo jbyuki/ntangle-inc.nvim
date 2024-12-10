@@ -1,0 +1,24 @@
+;;; ntangle-inc
+;; variables
+local enable_analysis_perf = false
+local buf_attach_history = {}
+
+;; implement
+function M.start_analysis()
+	enable_analysis_perf = true
+	buf_attach_history = {} 
+end
+
+function M.stop_analysis()
+	enable_analysis_perf = false
+	return buf_attach_history
+end
+
+;; start timer buf attach
+local start = vim.uv.hrtime()
+
+;; stop timer buf attach
+local stop = vim.uv.hrtime()
+if enable_analysis_perf then
+	table.insert(buf_attach_history, (stop - start)/1e6)
+end

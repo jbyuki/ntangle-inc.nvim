@@ -59,6 +59,8 @@ vim.api.nvim_buf_attach(buf, false, {
 	on_bytes = function(...)
 		local args = { ... }
 
+		; start timer buf attach
+
 		local res = ll_to_hl[ll]
 		res = ll_to_hl[ll]
 
@@ -72,6 +74,8 @@ vim.api.nvim_buf_attach(buf, false, {
 			; remove deleted parts
 			; add added parts
 		end
+
+		; stop timer buf attach
 	end
 })
 

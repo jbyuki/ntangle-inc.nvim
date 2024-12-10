@@ -1,0 +1,15 @@
+;;; ntangle-inc
+;; variables
+local lnum_to_ll_elem_cache = nil
+
+;; invalidate cache
+lnum_to_ll_elem_cache = nil
+
+;; save cache for t to nt
+lnum_to_ll_elem_cache = { lnum, ll_elem }
+
+;; check cache if lnum is close for t to nt
+if false then
+-- if lnum_to_ll_elem_cache and math.abs(lnum_to_ll_elem_cache[1] - lnum) < 10) then
+-- 	local cached_ll_elem = lnum_to_ll_elem_cache[2]
+-- 	if lnum < lnum_to_ll_elem_cache[1] then

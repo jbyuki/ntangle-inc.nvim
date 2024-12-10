@@ -2,7 +2,9 @@
 ;; implement
 function M.TtoNT(buf, lnum)
 	; check cache if lnum is close for t to nt
-	; otherwise lookup t to nt
+	else
+		; otherwise lookup t to nt
+	end
 	return {}
 end
 
@@ -22,6 +24,7 @@ if ll then
 		ll_elem = ll_elem.next
 	end
 
+	; save cache for t to nt
 	; lookup nt for ll elem
 	; return found nt offsets
 end

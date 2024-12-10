@@ -24,6 +24,7 @@ TEXT = 4,
 
 ;; implement
 function M.insert_hl(source, ll, ll_elem)
+	; invalidate cache
 	; parse ll elem data type
 	; if insert first line
 	; otherwise get assocated hierarchical list
@@ -413,6 +414,7 @@ self:update_size_rec(hl_elem.part, 1)
 
 ;; implement
 function M.remove_hl(source, ll, ll_elem)
+	; invalidate cache
 	; if remove first line
 	local hl_elem = ll_elem.hl_elem
 	local hl = ll_to_hl[ll]
