@@ -997,8 +997,8 @@ function M.get_hl_path(source, name)
 		source = vim.api.nvim_buf_get_name(source)
 	end
 
-	local parentdir = vim.fs.dirname(source)
-	local joined = vim.fs.normalize(vim.fs.joinpath(parentdir, name))
+	local parentdir = vim.fs.normalize(vim.fs.dirname(source))
+	local joined = vim.fs.joinpath(parentdir, name)
 	return joined
 
 end
@@ -1695,8 +1695,8 @@ function M.start()
 					local config = configs[1]
 					local hl_path = M.hl_to_hl_path[hl]
 					if hl_path then
-						local parent_path = hl_path
-						local bufname = vim.fs.normalize(vim.fs.joinpath(parent_path, M.ntangle_folder, root_section.name))
+						local parent_path = vim.fs.dirname(hl_path)
+						local bufname = vim.fs.normalize(vim.fs.joinpath(parent_path, M.ntangle_folder))
 						local buf_path = util.path.sanitize(bufname)
 						local uri = vim.uri_from_fname(buf_path)
 						M.buf_to_uri[buf] = uri
