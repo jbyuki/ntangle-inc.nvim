@@ -1700,7 +1700,7 @@ function M.start()
 						if root_section.name:find("\\") or root_section.name:find("/") then
 							bufname = vim.fs.normalize(vim.fs.joinpath(parent_path, root_section.name))
 						else
-							bufname = vim.fs.normalize(vim.fs.joinpath(parent_path, M.ntangle_folder))
+							bufname = vim.fs.normalize(vim.fs.joinpath(parent_path, M.ntangle_folder, root_section.name))
 						end
 
 						local buf_path = util.path.sanitize(bufname)
