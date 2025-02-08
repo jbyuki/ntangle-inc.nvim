@@ -623,8 +623,8 @@ if type(source) == "number" then
 end
 
 ;; join and normalize path and name
-local parentdir = vim.fs.normalize(vim.fs.dirname(source))
-local joined = vim.fs.joinpath(parentdir, name)
+local parentdir = vim.fs.dirname(source)
+local joined = vim.fs.normalize(vim.fs.joinpath(parentdir, name))
 return joined
 
 ;; implement

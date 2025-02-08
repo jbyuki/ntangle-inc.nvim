@@ -140,6 +140,7 @@ local buf_filetype  = M.buf_filetype
 
 ;; detect filetype from filename
 local ft = vim.filetype.match({filename = root_section.name})
+; special case for typescript
 local lang
 if ft then
 	buf_filetype[buf] = ft
@@ -148,3 +149,9 @@ end
 
 ;; convert filetype to lang
 lang = vim.treesitter.language.get_lang(ft)
+
+;; special case for typescript
+-- see https://github.com/neovim/neovim/issues/27265
+if not ft and vim.fn.fnamemodify(root_section.name, ":e") == "ts" then
+	ft = "typescript"
+end

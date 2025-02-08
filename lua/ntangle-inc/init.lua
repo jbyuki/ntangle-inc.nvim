@@ -997,8 +997,8 @@ function M.get_hl_path(source, name)
 		source = vim.api.nvim_buf_get_name(source)
 	end
 
-	local parentdir = vim.fs.normalize(vim.fs.dirname(source))
-	local joined = vim.fs.joinpath(parentdir, name)
+	local parentdir = vim.fs.dirname(source)
+	local joined = vim.fs.normalize(vim.fs.joinpath(parentdir, name))
 	return joined
 
 end
@@ -1653,10 +1653,15 @@ function M.start()
 			-- vim.api.nvim_buf_set_name(buf, root_section.name)
 
 			local ft = vim.filetype.match({filename = root_section.name})
+			-- see https://github.com/neovim/neovim/issues/27265
+			if not ft and vim.fn.fnamemodify(root_section.name, ":e") == "ts" then
+				ft = "typescript"
+			end
 			local lang
 			if ft then
 				buf_filetype[buf] = ft
 				lang = vim.treesitter.language.get_lang(ft)
+
 			end
 
 
