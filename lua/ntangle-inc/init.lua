@@ -166,7 +166,7 @@ function HL:getlines_all_lit(hl_elem)
 	elseif hl_elem.type == HL_ELEM_TYPE.REFERENCE then
 		assert(false)
 		local section = self.sections[hl_elem.name]
-		table.insert(section_lines, "; " .. hl_elem.name)
+		table.insert(section_lines, hl_elem.prefix .. "; " .. hl_elem.name)
 		if section and not lines_lit[hl_elem.name] then
 			local part = section.parts.head
 			while part do
@@ -197,7 +197,7 @@ function HL:getlines_next_lit(hl_elem, section_name, lines_lit)
 			break
 		elseif hl_elem.type == HL_ELEM_TYPE.REFERENCE then
 			local section = self.sections[hl_elem.name]
-			table.insert(section_lines, "; " .. hl_elem.name)
+			table.insert(section_lines, hl_elem.prefix .. "; " .. hl_elem.name)
 			if section and not lines_lit[hl_elem.name] then
 				local part = section.parts.head
 				while part do
