@@ -158,6 +158,60 @@ function HL:getlines_all(hl_elem)
 	return lines
 end
 
+function HL:getlines_all_lit(hl_elem)
+	local lines_lit = {}
+	local prefix = ""
+	if hl_elem.type == HL_ELEM_TYPE.SECTION_PART then
+		self:getlines_next_lit(hl_elem.lines.head, hl_elem.name, lines_lit)
+	elseif hl_elem.type == HL_ELEM_TYPE.REFERENCE then
+		assert(false)
+		local section = self.sections[hl_elem.name]
+		table.insert(section_lines, "; " .. hl_elem.name)
+		if section and not lines_lit[hl_elem.name] then
+			local part = section.parts.head
+			while part do
+				self:getlines_next_lit(part.lines.head, hl_elem.name, lines_lit)
+				part = part.next
+			end
+		end
+	elseif hl_elem.type == HL_ELEM_TYPE.TEXT then
+		local prefix = ""
+		assert(false)
+		table.insert(section_lines, hl_elem.ll_elem.str)
+
+	else
+		assert(false)
+	end
+	return lines_lit
+end
+
+function HL:getlines_next_lit(hl_elem, section_name, lines_lit)
+	if not lines_lit[section_name] then
+		lines_lit[section_name] = {}
+	end
+	local section_lines = lines_lit[section_name]
+	while hl_elem do
+		if hl_elem.type == HL_ELEM_TYPE.SECTION_PART then
+			break
+		elseif hl_elem.type == HL_ELEM_TYPE.FILLER then
+			break
+		elseif hl_elem.type == HL_ELEM_TYPE.REFERENCE then
+			local section = self.sections[hl_elem.name]
+			table.insert(section_lines, "; " .. hl_elem.name)
+			if section and not lines_lit[hl_elem.name] then
+				local part = section.parts.head
+				while part do
+					self:getlines_next_lit(part.lines.head, hl_elem.name, lines_lit)
+					part = part.next
+				end
+			end
+		elseif hl_elem.type == HL_ELEM_TYPE.TEXT then
+			table.insert(section_lines, hl_elem.ll_elem.str)
+
+		end
+		hl_elem = hl_elem.next
+	end
+end
 
 function HL:new()
 	local hl = {}
