@@ -1640,11 +1640,11 @@ function M.indentexpr()
 			local indent = mod.get_indent(line+1) 
 			if indent >= 0 then
 				local num_spaces = 0
-				if #prefix > 0 then
-					if prefix:sub(1,1) == "\t" then
-						num_spaces = #prefix * vim.o.ts
+				for i=1,#prefix do
+					if prefix:sub(i,i) == "\t" then
+						num_spaces = num_spaces + vim.o.ts
 					else
-						num_spaces = #prefix * vim.o.sw
+						num_spaces = num_spaces + 1
 					end
 				end
 				return math.max(indent-num_spaces, 0)
