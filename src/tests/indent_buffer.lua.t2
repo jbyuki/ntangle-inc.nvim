@@ -66,6 +66,6 @@ if #prefix > 0 then
 	if prefix:sub(1,1) == "\t" then
 		num_spaces = #prefix * vim.o.ts
 	else
-		num_spaces = #prefix
+		num_spaces = #prefix * vim.o.sw
 	end
 end

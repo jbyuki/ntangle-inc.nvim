@@ -1644,7 +1644,7 @@ function M.indentexpr()
 					if prefix:sub(1,1) == "\t" then
 						num_spaces = #prefix * vim.o.ts
 					else
-						num_spaces = #prefix
+						num_spaces = #prefix * vim.o.sw
 					end
 				end
 				return math.max(indent-num_spaces, 0)
