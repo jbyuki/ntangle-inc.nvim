@@ -185,6 +185,34 @@ function HL:getlines_all_lit(hl_elem)
 	return lines_lit
 end
 
+function HL:getlines_single_lit(hl_elem, section_name, lines_lit)
+	if not lines_lit[section_name] then
+		lines_lit[section_name] = {}
+	end
+	local section_lines = lines_lit[section_name]
+	while true do
+		if hl_elem.type == HL_ELEM_TYPE.SECTION_PART then
+			break
+		elseif hl_elem.type == HL_ELEM_TYPE.FILLER then
+			break
+		elseif hl_elem.type == HL_ELEM_TYPE.REFERENCE then
+			local section = self.sections[hl_elem.name]
+			table.insert(section_lines, hl_elem.prefix .. "; " .. hl_elem.name)
+			if section and not lines_lit[hl_elem.name] then
+				local part = section.parts.head
+				while part do
+					self:getlines_next_lit(part.lines.head, hl_elem.name, lines_lit)
+					part = part.next
+				end
+			end
+		elseif hl_elem.type == HL_ELEM_TYPE.TEXT then
+			table.insert(section_lines, hl_elem.ll_elem.str)
+
+		end
+		break
+	end
+end
+
 function HL:getlines_next_lit(hl_elem, section_name, lines_lit)
 	if not lines_lit[section_name] then
 		lines_lit[section_name] = {}
