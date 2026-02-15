@@ -1739,6 +1739,10 @@ function M.start()
 			if not ft and vim.fn.fnamemodify(root_section.name, ":e") == "ts" then
 				ft = "typescript"
 			end
+
+			if not ft and vim.fn.fnamemodify(root_section.name, ":e") == "h" then
+				ft = "cpp"
+			end
 			local lang
 			if ft then
 				buf_filetype[buf] = ft
