@@ -1,12 +1,27 @@
 ;;; ../ntangle-inc
+;; declare
+local get_client_by_ft
+
+;; implement
+get_client_by_ft = function(ft)
+	return vim.iter(vim.lsp._enabled_configs)
+		:filter(function(name, _)
+			return vim.tbl_contains(vim.lsp.config[name].filetypes, ft)
+		end)
+		:totable()
+end
+
 ;; attach lsp client to buffer
 local lspconfig_found, lspconfig = pcall(require, "lspconfig")
 if lang and lspconfig_found then
 	local util = require"lspconfig.util"
-	local configs = util.get_config_by_ft(lang)
+	local configs = get_client_by_ft(lang)
 	if #configs > 0 then
-		local config = configs[1]
-		; try add lsp to buffer
+		local config = configs[1][2].resolved_config
+		if config then
+			config = vim.deepcopy(config)
+			; try add lsp to buffer
+		end
 	end
 end
 
@@ -14,7 +29,7 @@ end
 ;; try add lsp to buffer
 local hl_path = M.hl_to_hl_path[hl]
 if hl_path then
-	local parent_path = vim.fs.dirname(hl_path)
+	local parent_path = hl_path
 	local bufname
 	if root_section.name:find("\\") or root_section.name:find("/") then
 		bufname = vim.fs.normalize(vim.fs.joinpath(parent_path, root_section.name))
@@ -24,32 +39,26 @@ if hl_path then
 
 	local buf_path = util.path.sanitize(bufname)
 	; save buf path for lsp
-	local manager = config.manager
-	if manager then
-		; find root dir
-		if root_dir then
-			; add lsp using root dir
-		elseif manager.config.single_file_support then
-			; make pseudo root dir
-			; add lsp using pseudo root dir
-		end
-	end
+	; find root dir
+	local client_id
+	; add lsp using root dir
+	; attach client id to buffer
 end
 
 ;; find root dir
-local root_dir
-if config.get_root_dir then
-	root_dir = config.get_root_dir(buf_path, buf)
+for _, marker in ipairs(config.root_markers) do
+	local root_dir = vim.fs.root(buf_path, marker)
+	if root_dir ~= nil then
+		config.root_dir = root_dir
+		break
+	end
 end
 
 ;; add lsp using root dir
-manager:add(root_dir, false, buf)
+local client_id = vim.lsp.create_and_init_client(config)
 
-;; make pseudo root dir
-local pseudo_root = vim.fs.dirname(buf_path)
-
-;; add lsp using pseudo root dir
-manager:add(pseudo_root, true, buf)
+;; attach client id to buffer
+vim.lsp.buf_attach_client(buf, client_id)
 
 ;; variables
 M.buf_to_uri = {}
